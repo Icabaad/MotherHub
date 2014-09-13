@@ -50,6 +50,7 @@ char sensorId8[] = "Xbee1_Solar";
 char sensorId9[] = "Total_Power_Use";
 char sensorId10[] = "Hydroheat";
 char sensorId11[] = "Lights_Powah";
+char sensorId12[] = "Water_Usage";
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
@@ -68,11 +69,12 @@ XivelyDatastream datastreams[] = {
   XivelyDatastream(sensorId9, strlen(sensorId9), DATASTREAM_INT),
   XivelyDatastream(sensorId10, strlen(sensorId10), DATASTREAM_INT),
   XivelyDatastream(sensorId11, strlen(sensorId11), DATASTREAM_INT),
+  XivelyDatastream(sensorId12, strlen(sensorId12), DATASTREAM_FLOAT),
   // XivelyDatastream(bufferId, strlen(bufferId), DATASTREAM_BUFFER, bufferValue, bufferSize),
   // XivelyDatastream(stringId, DATASTREAM_STRING)
 };
 // Finally, wrap the datastreams into a feed
-XivelyFeed feed(1177751918, datastreams, 12 /* number of datastreams */);
+XivelyFeed feed(1177751918, datastreams, 13 /* number of datastreams */);
 
 EthernetClient client;
 XivelyClient xivelyclient(client);
@@ -233,12 +235,18 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
-     
+
       if(test = 1084373003){ //Watermeter
-      String tester = xbeeReadString.substring(1, 6);
-      Serial.print("tester:");
-      Serial.println(tester);
-    }
+        String water = xbeeReadString.substring(19, 25);
+        char floatbuf[8]; // make this at least big enough for the whole string
+        water.toCharArray(floatbuf, sizeof(floatbuf));
+        float strWater = atof(floatbuf);
+        datastreams[12].setFloat(strWater);
+        Serial.print("water use:");
+        Serial.print(strWater);
+        Serial.println("L/m");
+        Serial2.flush();
+      }
 
       xbeeReadString = " ";
     }
@@ -462,6 +470,8 @@ void loop() {
     Serial.print(datastreams[10].getInt());
     Serial.print(",");
     Serial.print(datastreams[11].getInt());
+    Serial.print(",");
+    Serial.print(datastreams[12].getFloat());
     Serial.println();
     Serial.println("SQL Injected!");
     Serial.println();
@@ -538,6 +548,8 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
 
 
 
