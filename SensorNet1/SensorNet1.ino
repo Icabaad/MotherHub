@@ -225,16 +225,21 @@ void loop() {
         if (iscntrl(rx.getData()[i]));
         //       Serial.write(' ');
         else
-          Serial.write(rx.getData()[i]);
+          Serial.print(rx.getData()[i]);
         //     Serial.write(' ');
       }
       Serial.println();
       // So, for example, you could do something like this:
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
-
+      Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
-      String tester = xbeeReadString.substring(17, 22);
+     
+      if(test = 1084373003){ //Watermeter
+      String tester = xbeeReadString.substring(1, 6);
+      Serial.print("tester:");
       Serial.println(tester);
+    }
+
       xbeeReadString = " ";
     }
 
@@ -293,14 +298,14 @@ void loop() {
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
       }
-//      else if (test == 1081730785) {
-//        Serial.println("Xbee 2 - Not Processing!");
-//      }
-      
+      //      else if (test == 1081730785) {
+      //        Serial.println("Xbee 2 - Not Processing!");
+      //      }
+
       //this is else causes code to not upload properly.....????
-//      else if (test == 1082562186) {
-//        Serial.println("Xbee 3!!!!! - Not Processing!");
-//      }
+      //      else if (test == 1082562186) {
+      //        Serial.println("Xbee 3!!!!! - Not Processing!");
+      //      }
     }
     else {
       Serial.print("Expected I/O Sample, but got ");
@@ -533,6 +538,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
 
 
 
