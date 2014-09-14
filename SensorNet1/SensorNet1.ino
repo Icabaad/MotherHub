@@ -51,6 +51,8 @@ char sensorId9[] = "Total_Power_Use";
 char sensorId10[] = "Hydroheat";
 char sensorId11[] = "Lights_Powah";
 char sensorId12[] = "Water_Usage";
+char sensorId13[] = "Water_Usage_Hourly";
+char sensorId14[] = "Water_Usage_Daily";
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
@@ -70,11 +72,13 @@ XivelyDatastream datastreams[] = {
   XivelyDatastream(sensorId10, strlen(sensorId10), DATASTREAM_INT),
   XivelyDatastream(sensorId11, strlen(sensorId11), DATASTREAM_INT),
   XivelyDatastream(sensorId12, strlen(sensorId12), DATASTREAM_FLOAT),
+  XivelyDatastream(sensorId13, strlen(sensorId13), DATASTREAM_FLOAT),
+  XivelyDatastream(sensorId14, strlen(sensorId14), DATASTREAM_FLOAT),
   // XivelyDatastream(bufferId, strlen(bufferId), DATASTREAM_BUFFER, bufferValue, bufferSize),
   // XivelyDatastream(stringId, DATASTREAM_STRING)
 };
 // Finally, wrap the datastreams into a feed
-XivelyFeed feed(1177751918, datastreams, 13 /* number of datastreams */);
+XivelyFeed feed(1177751918, datastreams, 15 /* number of datastreams */);
 
 EthernetClient client;
 XivelyClient xivelyclient(client);
@@ -237,15 +241,36 @@ void loop() {
       Serial.println(xbeeReadString);
 
       if(test = 1084373003){ //Watermeter
+        int waterTimer = 0;
+        float waterHourly;
+        float waterDaily;
+        waterTimer ++;
         String water = xbeeReadString.substring(19, 25);
         char floatbuf[8]; // make this at least big enough for the whole string
         water.toCharArray(floatbuf, sizeof(floatbuf));
         float strWater = atof(floatbuf);
+        waterHourly = strWater + waterHourly;
+        waterDaily = strWater + waterDaily;
         datastreams[12].setFloat(strWater);
+        datastreams[13].setFloat(waterHourly);
+        datastreams[14].setFloat(waterDaily);
         Serial.print("water use:");
         Serial.print(strWater);
-        Serial.println("L/m");
+        Serial.println("L/min");
+        Serial.print("water use:");
+        Serial.print(waterHourly);
+        Serial.println("L/hour");
+        Serial.print("water use:");
+        Serial.print(waterDaily);
+        Serial.println("L/day");
         Serial2.flush();
+        if(waterTimer = 60) { //Need to introduce a RTC to sync times with RL hours etc
+          waterHourly = 0;
+        }
+        if(waterTimer = 1440) { //resets Daily count after 1440 minutes (24 Hours)
+          waterDaily = 0;
+          waterTimer = 0;
+        }
       }
 
       xbeeReadString = " ";
@@ -548,6 +573,8 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
 
 
 
