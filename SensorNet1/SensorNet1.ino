@@ -88,7 +88,10 @@ int motionPin = 2; // choose the input pin (for PIR sensor)
 int ledPin = 3; //LED
 int timer = 0;
 int hydroLED = 6; //LED that comes on with hotwater/heatpump
-
+float strWater = 0;
+        int waterTimer = 0;
+        float waterHourly;
+        float waterDaily;
 //powerserial1
 const int fNumber = 3; //number of fields to recieve in data stream
 int fieldIndex =0; //current field being recieved
@@ -241,16 +244,14 @@ void loop() {
       Serial.println(xbeeReadString);
 
       if(test = 1084373003){ //Watermeter
-        int waterTimer = 0;
-        float waterHourly;
-        float waterDaily;
+
         waterTimer ++;
         String water = xbeeReadString.substring(19, 25);
         char floatbuf[8]; // make this at least big enough for the whole string
         water.toCharArray(floatbuf, sizeof(floatbuf));
-        float strWater = atof(floatbuf);
-        waterHourly = strWater + waterHourly;
-        waterDaily = strWater + waterDaily;
+        strWater = atof(floatbuf);
+        waterHourly = waterHourly + strWater;
+        waterDaily = waterDaily + strWater;
         datastreams[12].setFloat(strWater);
         datastreams[13].setFloat(waterHourly);
         datastreams[14].setFloat(waterDaily);
@@ -264,10 +265,10 @@ void loop() {
         Serial.print(waterDaily);
         Serial.println("L/day");
         Serial2.flush();
-        if(waterTimer = 60) { //Need to introduce a RTC to sync times with RL hours etc
+        if(waterTimer == 60) { //Need to introduce a RTC to sync times with RL hours etc
           waterHourly = 0;
         }
-        if(waterTimer = 1440) { //resets Daily count after 1440 minutes (24 Hours)
+        if(waterTimer == 1440) { //resets Daily count after 1440 minutes (24 Hours)
           waterDaily = 0;
           waterTimer = 0;
         }
