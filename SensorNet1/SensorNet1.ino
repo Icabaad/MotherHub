@@ -89,9 +89,11 @@ int ledPin = 3; //LED
 int timer = 0;
 int hydroLED = 6; //LED that comes on with hotwater/heatpump
 float strWater = 0;
-        int waterTimer = 0;
-        float waterHourly;
-        float waterDaily;
+int waterTimer = 0;
+int waterTimer2 = 0;
+float waterHourly;
+float waterDaily;
+
 //powerserial1
 const int fNumber = 3; //number of fields to recieve in data stream
 int fieldIndex =0; //current field being recieved
@@ -246,6 +248,7 @@ void loop() {
       if(test = 1084373003){ //Watermeter
 
         waterTimer ++;
+        waterTimer2 ++;
         String water = xbeeReadString.substring(19, 25);
         char floatbuf[8]; // make this at least big enough for the whole string
         water.toCharArray(floatbuf, sizeof(floatbuf));
@@ -265,8 +268,9 @@ void loop() {
         Serial.print(waterDaily);
         Serial.println("L/day");
         Serial2.flush();
-        if(waterTimer == 60) { //Need to introduce a RTC to sync times with RL hours etc
+        if(waterTimer2 == 60) { //Need to introduce a RTC to sync times with RL hours etc
           waterHourly = 0;
+          waterTimer2 = 0;
         }
         if(waterTimer == 1440) { //resets Daily count after 1440 minutes (24 Hours)
           waterDaily = 0;
@@ -574,6 +578,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
 
 
 
