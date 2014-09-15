@@ -1,4 +1,5 @@
 // Sensor Mega! V.001
+// Based on MongNet 1337ness
 // Receives Data from Xbee Coordinator and Serial1 Arduino UNO. 
 // Processes numerous other Sensors and uploads to Xively and local SQL via Rasberry Pi
 // http://www.dangertech.org
@@ -304,7 +305,7 @@ void loop() {
           }
         }
       }
-      if (test == 1083188734) {
+      if (test == 1083188734) { // Testing Var
         Serial.println("Xbee 1");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
