@@ -88,11 +88,15 @@ int motionPin = 2; // choose the input pin (for PIR sensor)
 int ledPin = 3; //LED
 int timer = 0;
 int hydroLED = 6; //LED that comes on with hotwater/heatpump
+
 float strWater = 0;
 int waterTimer = 0;
 int waterTimer2 = 0;
 float waterHourly;
 float waterDaily;
+
+char server[] = "http://emoncms.org/";     //emoncms URL
+String apiKey = "ebd4f194e60f6e8694f56aa48b094ddb";
 
 //powerserial1
 const int fNumber = 3; //number of fields to recieve in data stream
@@ -511,7 +515,6 @@ void loop() {
     Serial.print("xivelyclient.put returned ");
     Serial.println(ret);
 
-<<<<<<< HEAD
 
 //EmonCMS
 if(client.connect("emoncms.org",80)){
@@ -604,8 +607,6 @@ else {
       client.stop();
 }
 
-=======
->>>>>>> parent of fea8eae... Added EmonCMS Posting Support!
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
     commsMotion = 0;
