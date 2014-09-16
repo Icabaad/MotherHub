@@ -88,11 +88,15 @@ int motionPin = 2; // choose the input pin (for PIR sensor)
 int ledPin = 3; //LED
 int timer = 0;
 int hydroLED = 6; //LED that comes on with hotwater/heatpump
+
 float strWater = 0;
 int waterTimer = 0;
 int waterTimer2 = 0;
 float waterHourly;
 float waterDaily;
+
+char server[] = "http://emoncms.org/";     //emoncms URL
+String apiKey = "ebd4f194e60f6e8694f56aa48b094ddb";
 
 //powerserial1
 const int fNumber = 3; //number of fields to recieve in data stream
@@ -510,6 +514,98 @@ void loop() {
     int ret = xivelyclient.put(feed, xivelyKey);
     Serial.print("xivelyclient.put returned ");
     Serial.println(ret);
+
+
+//EmonCMS
+if(client.connect("emoncms.org",80)){
+    Serial.print("Connecting.....");
+    client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
+    client.print("CommsMotion:");
+    client.print(datastreams[0].getInt());
+    client.print(",CommsTemp:");
+    client.print(datastreams[1].getFloat());
+    client.print(",CommsBarometer:");
+    client.print(datastreams[2].getFloat());  
+    client.print(",CommsHumidity:");
+    client.print(datastreams[3].getFloat());
+    client.print(",CommsLux:");
+    client.print(datastreams[4].getInt());
+    client.print(",TempOutside:");
+    client.print(datastreams[5].getFloat());
+    client.print(",Xbee1InternalV:");
+    client.print(datastreams[6].getFloat());  
+    client.print(",Xbee1BatteryV:");
+    client.print(datastreams[7].getFloat());
+    client.print(",Xbee1SolarV:");
+    client.print(datastreams[8].getFloat());
+    client.print(",HousePowerUse:");
+    client.print(datastreams[9].getInt());  
+    client.print(",HeaterHotwaterUse:");
+    client.print(datastreams[10].getInt());
+    client.print(",LightsPowerUse:");
+    client.print(datastreams[11].getInt());
+    client.print(",WaterusageMinute:");
+    client.print(datastreams[12].getFloat());
+    client.print(",WaterusageHourly:");
+    client.print(datastreams[13].getFloat());  
+    client.print(",WaterusageDaily:");
+    client.print(datastreams[14].getFloat());
+    client.print("}&apikey=");
+    client.print(apiKey);         //assuming APIKEY is a char or string
+    client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+    client.println("Host: emoncms.org");
+    client.println("User-Agent: Arduino-ethernet");
+    client.println("Connection: close");     //    Although not technically necessary, I found this helpful
+    client.println();
+
+/*
+    Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
+    Serial.print("CommsMotion:");
+    Serial.print(datastreams[0].getInt());
+    Serial.print(",CommsTemp:");
+    Serial.print(datastreams[1].getFloat());
+    Serial.print(",CommsBarometer:");
+    Serial.print(datastreams[2].getFloat());  
+    Serial.print(",CommsHumidity:");
+    Serial.print(datastreams[3].getFloat());
+    Serial.print(",CommsLux:");
+    Serial.print(datastreams[4].getInt());
+    Serial.print(",TempOutside:");
+    Serial.print(datastreams[5].getFloat());
+    Serial.print(",Xbee1InternalV:");
+    Serial.print(datastreams[6].getFloat());  
+    Serial.print(",Xbee1BatteryV:");
+    Serial.print(datastreams[7].getFloat());
+    Serial.print(",Xbee1SolarV:");
+    Serial.print(datastreams[8].getFloat());
+    Serial.print(",HousePowerUse:");
+    Serial.print(datastreams[9].getInt());  
+    Serial.print(",HeaterHotwaterUse:");
+    Serial.print(datastreams[10].getInt());
+    Serial.print(",LightsPowerUse:");
+    Serial.print(datastreams[11].getInt());
+    Serial.print(",WaterusageMinute:");
+    Serial.print(datastreams[12].getFloat());
+    Serial.print(",WaterusageHourly:");
+    Serial.print(datastreams[13].getFloat());  
+    Serial.print(",WaterusageDaily:");
+    Serial.print(datastreams[14].getFloat());
+    Serial.print("}&apikey=");
+    Serial.println(apiKey);         //assuming APIKEY is a char or string
+
+    Serial.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+    Serial.println(F("Host: emoncms.org"));
+    Serial.println(F("User-Agent: Arduino-ethernet"));
+    Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
+    Serial.println();
+    Serial.println("Upolad to EmonCMS Completed");
+    */
+    client.stop();
+}
+else {
+      Serial.println("Upload to EmonCMS Failed *************");
+      client.stop();
+}
 
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
