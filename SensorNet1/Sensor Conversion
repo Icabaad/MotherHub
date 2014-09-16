@@ -1,0 +1,18 @@
+DataStream #; Sensor name
+
+1  Comms_Motion
+2  Comms_Temp
+3  Comms_Barometer
+4  Comms_Humidity
+5  Comms_Lux
+6  Outdoor_Temp
+7  Outdoor_Voltage
+8  Xbee1_Battery
+9  Xbee1_Solar
+10 Total_Power_Use
+11 Hydroheat
+12 Lights_Powah
+13 Water_Usage
+14 Water_Usage_Hourly
+15 Water_Usage_Daily
+
