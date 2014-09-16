@@ -598,8 +598,8 @@ if(client.connect("emoncms.org",80)){
     Serial.println(F("User-Agent: Arduino-ethernet"));
     Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
     Serial.println();
-    Serial.println("Upolad to EmonCMS Completed");
     */
+    Serial.println("Upload to EmonCMS Completed");
     client.stop();
 }
 else {
