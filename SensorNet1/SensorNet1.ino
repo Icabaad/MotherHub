@@ -558,7 +558,7 @@ if(client.connect("emoncms.org",80)){
     client.println("Connection: close");     //    Although not technically necessary, I found this helpful
     client.println();
 
-/*
+
     Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
     Serial.print("CommsMotion:");
     Serial.print(datastreams[0].getInt());
@@ -598,7 +598,7 @@ if(client.connect("emoncms.org",80)){
     Serial.println(F("User-Agent: Arduino-ethernet"));
     Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
     Serial.println();
-    */
+    
     Serial.println("Upload to EmonCMS Completed");
     client.stop();
 }
