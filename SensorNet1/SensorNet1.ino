@@ -53,6 +53,7 @@ char sensorId11[] = "Lights_Powah";
 char sensorId12[] = "Water_Usage";
 char sensorId13[] = "Water_Usage_Hourly";
 char sensorId14[] = "Water_Usage_Daily";
+char sensorId15[] = "Bedroom1_Temp";
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
@@ -74,11 +75,12 @@ XivelyDatastream datastreams[] = {
   XivelyDatastream(sensorId12, strlen(sensorId12), DATASTREAM_FLOAT),
   XivelyDatastream(sensorId13, strlen(sensorId13), DATASTREAM_FLOAT),
   XivelyDatastream(sensorId14, strlen(sensorId14), DATASTREAM_FLOAT),
+  XivelyDatastream(sensorId15, strlen(sensorId14), DATASTREAM_FLOAT),
   // XivelyDatastream(bufferId, strlen(bufferId), DATASTREAM_BUFFER, bufferValue, bufferSize),
   // XivelyDatastream(stringId, DATASTREAM_STRING)
 };
 // Finally, wrap the datastreams into a feed
-XivelyFeed feed(1177751918, datastreams, 15 /* number of datastreams */);
+XivelyFeed feed(1177751918, datastreams, 16 /* number of datastreams */);
 
 EthernetClient client;
 XivelyClient xivelyclient(client);
@@ -204,7 +206,7 @@ void loop() {
       Serial.println(")");
 
       Serial.println(senderLongAddress.getLsb());
-      uint32_t test = (senderLongAddress.getLsb());  
+      uint32_t xbee = (senderLongAddress.getLsb());  
 
       // The option byte is a bit field
       if (rx.getOption() & ZB_PACKET_ACKNOWLEDGED)
@@ -249,7 +251,7 @@ void loop() {
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
 
-      if(test = 1084373003){ //Watermeter
+      if(xbee = 1084373003){ //Watermeter
 
         waterTimer ++;
         waterTimer2 ++;
@@ -289,7 +291,7 @@ void loop() {
       xbee.getResponse().getZBRxIoSampleResponse(ioSample);
       XBeeAddress64 senderLongAddress = ioSample.getRemoteAddress64();
       Serial.println(senderLongAddress.getLsb());
-      uint32_t test = (senderLongAddress.getLsb());
+      uint32_t xbee = (senderLongAddress.getLsb());
 
       if (ioSample.containsAnalog()) {
         Serial.println("Sample contains analog data");
@@ -308,8 +310,8 @@ void loop() {
           }
         }
       }
-      if (test == 1083188734) {
-        Serial.println("Xbee 1");
+      if (xbee == 1083188734) {
+        Serial.println("Outside");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
         voltage /= 1024.0; 
@@ -340,9 +342,24 @@ void loop() {
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
       }
-      //      else if (test == 1081730785) {
-      //        Serial.println("Xbee 2 - Not Processing!");
-      //      }
+      if (xbee == 1081730917) {
+        Serial.println("Bedroom");
+        int reading = (ioSample.getAnalog(0));
+        float voltage = reading * 1.2;
+        voltage /= 1024.0; 
+        float temperatureC = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+        //to degrees ((volatge - 500mV) times 100)
+        Serial.print(temperatureC); 
+        Serial.println(" degrees C");
+        datastreams[15].setFloat(temperatureC);
+
+        int vReading3 = (ioSample.getAnalog(7));
+        float xbee1v = vReading3 * 1.2 / 1024;      
+        // voltage /= 1024.0; 
+        Serial.print(xbee1v); 
+        Serial.println(" Bedroom Xbee Voltage Not logged");
+        datastreams[6].setFloat(xbee1v);
+      }
 
       //this is else causes code to not upload properly.....????
       //      else if (test == 1082562186) {
@@ -516,96 +533,98 @@ void loop() {
     Serial.println(ret);
 
 
-//EmonCMS
-if(client.connect("emoncms.org",80)){
-    Serial.print("Connecting.....");
-    client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-    client.print("CommsMotion:");
-    client.print(datastreams[0].getInt());
-    client.print(",CommsTemp:");
-    client.print(datastreams[1].getFloat());
-    client.print(",CommsBarometer:");
-    client.print(datastreams[2].getFloat());  
-    client.print(",CommsHumidity:");
-    client.print(datastreams[3].getFloat());
-    client.print(",CommsLux:");
-    client.print(datastreams[4].getInt());
-    client.print(",TempOutside:");
-    client.print(datastreams[5].getFloat());
-    client.print(",Xbee1InternalV:");
-    client.print(datastreams[6].getFloat());  
-    client.print(",Xbee1BatteryV:");
-    client.print(datastreams[7].getFloat());
-    client.print(",Xbee1SolarV:");
-    client.print(datastreams[8].getFloat());
-    client.print(",HousePowerUse:");
-    client.print(datastreams[9].getInt());  
-    client.print(",HeaterHotwaterUse:");
-    client.print(datastreams[10].getInt());
-    client.print(",LightsPowerUse:");
-    client.print(datastreams[11].getInt());
-    client.print(",WaterusageMinute:");
-    client.print(datastreams[12].getFloat());
-    client.print(",WaterusageHourly:");
-    client.print(datastreams[13].getFloat());  
-    client.print(",WaterusageDaily:");
-    client.print(datastreams[14].getFloat());
-    client.print("}&apikey=");
-    client.print(apiKey);         //assuming APIKEY is a char or string
-    client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-    client.println("Host: emoncms.org");
-    client.println("User-Agent: Arduino-ethernet");
-    client.println("Connection: close");     //    Although not technically necessary, I found this helpful
-    client.println();
+    //EmonCMS
+    if(client.connect("emoncms.org",80)){
+      Serial.print("Connecting.....");
+      client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
+      client.print("CommsMotion:");
+      client.print(datastreams[0].getInt());
+      client.print(",CommsTemp:");
+      client.print(datastreams[1].getFloat());
+      client.print(",CommsBarometer:");
+      client.print(datastreams[2].getFloat());  
+      client.print(",CommsHumidity:");
+      client.print(datastreams[3].getFloat());
+      client.print(",CommsLux:");
+      client.print(datastreams[4].getInt());
+      client.print(",TempOutside:");
+      client.print(datastreams[5].getFloat());
+      client.print(",Xbee1InternalV:");
+      client.print(datastreams[6].getFloat());  
+      client.print(",Xbee1BatteryV:");
+      client.print(datastreams[7].getFloat());
+      client.print(",Xbee1SolarV:");
+      client.print(datastreams[8].getFloat());
+      client.print(",HousePowerUse:");
+      client.print(datastreams[9].getInt());  
+      client.print(",HeaterHotwaterUse:");
+      client.print(datastreams[10].getInt());
+      client.print(",LightsPowerUse:");
+      client.print(datastreams[11].getInt());
+      client.print(",WaterusageMinute:");
+      client.print(datastreams[12].getFloat());
+      client.print(",WaterusageHourly:");
+      client.print(datastreams[13].getFloat());  
+      client.print(",WaterusageDaily:");
+      client.print(datastreams[14].getFloat());
+      client.print(",Bedroom1Temp:");
+      client.print(datastreams[15].getFloat());
+      client.print("}&apikey=");
+      client.print(apiKey);         //assuming APIKEY is a char or string
+      client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+      client.println("Host: emoncms.org");
+      client.println("User-Agent: Arduino-ethernet");
+      client.println("Connection: close");     //    Although not technically necessary, I found this helpful
+      client.println();
 
 
-    Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-    Serial.print("CommsMotion:");
-    Serial.print(datastreams[0].getInt());
-    Serial.print(",CommsTemp:");
-    Serial.print(datastreams[1].getFloat());
-    Serial.print(",CommsBarometer:");
-    Serial.print(datastreams[2].getFloat());  
-    Serial.print(",CommsHumidity:");
-    Serial.print(datastreams[3].getFloat());
-    Serial.print(",CommsLux:");
-    Serial.print(datastreams[4].getInt());
-    Serial.print(",TempOutside:");
-    Serial.print(datastreams[5].getFloat());
-    Serial.print(",Xbee1InternalV:");
-    Serial.print(datastreams[6].getFloat());  
-    Serial.print(",Xbee1BatteryV:");
-    Serial.print(datastreams[7].getFloat());
-    Serial.print(",Xbee1SolarV:");
-    Serial.print(datastreams[8].getFloat());
-    Serial.print(",HousePowerUse:");
-    Serial.print(datastreams[9].getInt());  
-    Serial.print(",HeaterHotwaterUse:");
-    Serial.print(datastreams[10].getInt());
-    Serial.print(",LightsPowerUse:");
-    Serial.print(datastreams[11].getInt());
-    Serial.print(",WaterusageMinute:");
-    Serial.print(datastreams[12].getFloat());
-    Serial.print(",WaterusageHourly:");
-    Serial.print(datastreams[13].getFloat());  
-    Serial.print(",WaterusageDaily:");
-    Serial.print(datastreams[14].getFloat());
-    Serial.print("}&apikey=");
-    Serial.println(apiKey);         //assuming APIKEY is a char or string
+      Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
+      Serial.print("CommsMotion:");
+      Serial.print(datastreams[0].getInt());
+      Serial.print(",CommsTemp:");
+      Serial.print(datastreams[1].getFloat());
+      Serial.print(",CommsBarometer:");
+      Serial.print(datastreams[2].getFloat());  
+      Serial.print(",CommsHumidity:");
+      Serial.print(datastreams[3].getFloat());
+      Serial.print(",CommsLux:");
+      Serial.print(datastreams[4].getInt());
+      Serial.print(",TempOutside:");
+      Serial.print(datastreams[5].getFloat());
+      Serial.print(",Xbee1InternalV:");
+      Serial.print(datastreams[6].getFloat());  
+      Serial.print(",Xbee1BatteryV:");
+      Serial.print(datastreams[7].getFloat());
+      Serial.print(",Xbee1SolarV:");
+      Serial.print(datastreams[8].getFloat());
+      Serial.print(",HousePowerUse:");
+      Serial.print(datastreams[9].getInt());  
+      Serial.print(",HeaterHotwaterUse:");
+      Serial.print(datastreams[10].getInt());
+      Serial.print(",LightsPowerUse:");
+      Serial.print(datastreams[11].getInt());
+      Serial.print(",WaterusageMinute:");
+      Serial.print(datastreams[12].getFloat());
+      Serial.print(",WaterusageHourly:");
+      Serial.print(datastreams[13].getFloat());  
+      Serial.print(",WaterusageDaily:");
+      Serial.print(datastreams[14].getFloat());
+      Serial.print("}&apikey=");
+      Serial.println(apiKey);         //assuming APIKEY is a char or string
 
-    Serial.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-    Serial.println(F("Host: emoncms.org"));
-    Serial.println(F("User-Agent: Arduino-ethernet"));
-    Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
-    Serial.println();
-    
-    Serial.println("Upload to EmonCMS Completed");
-    client.stop();
-}
-else {
+      Serial.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+      Serial.println(F("Host: emoncms.org"));
+      Serial.println(F("User-Agent: Arduino-ethernet"));
+      Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
+      Serial.println();
+
+      Serial.println("Upload to EmonCMS Completed");
+      client.stop();
+    }
+    else {
       Serial.println("Upload to EmonCMS Failed *************");
       client.stop();
-}
+    }
 
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
@@ -674,6 +693,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
 
 
 
