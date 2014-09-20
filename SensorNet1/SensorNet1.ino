@@ -284,20 +284,45 @@ void loop() {
         }
       }
 
-if(xbee == 1081730797) { //powermeter
+      if(xbee == 1081730797) { //powermeter
         Serial.println("Power Meter");
         String realPower1 = xbeeReadString.substring(19, 25);
         String realPower2 = xbeeReadString.substring(26, 34);
+        String realPower3 = xbeeReadString.substring(35, 43);
+        String realPower4 = xbeeReadString.substring(44, 52);
+        String Irms1 = xbeeReadString.substring(53, 59);
+        String Irms2 = xbeeReadString.substring(60, 66);
+        String Irms3 = xbeeReadString.substring(67, 73);
+        String Irms4 = xbeeReadString.substring(74, 80);
+        String Vrms = xbeeReadString.substring(81, 88);
+
+        Serial.print("CT1 Real Power:");
+        Serial.println(realPower1);
+        Serial.print("CT2 Real Power:");
+        Serial.println(realPower2);
+        Serial.print("CT3 Real Power:");
+        Serial.println(realPower3);
+        Serial.print("CT3 Real Power:");
+        Serial.println(realPower4);
+
+        Serial.print("CT1 Current:");
+        Serial.println(Irms1);
+        Serial.print("CT2 Current:");
+        Serial.println(Irms2);
+        Serial.print("CT3 Current:");
+        Serial.println(Irms3);
+        Serial.print("CT4 Current:");
+        Serial.println(Irms4);
+
+        Serial.print("Line Voltage:");
+        Serial.println(Vrms);
         
-                Serial.print("CT1 Real Power:");
-        Serial.print(realPower1);
-                Serial.print("CT2 Real Power:");
-        Serial.print(realPower2);
-}
+                Serial2.flush();
+      }
 
       xbeeReadString = " ";
     }
-// XBEE IO Samples
+    // XBEE IO Samples
     else if (xbee.getResponse().getApiId() == ZB_IO_SAMPLE_RESPONSE) {
       xbee.getResponse().getZBRxIoSampleResponse(ioSample);
       XBeeAddress64 senderLongAddress = ioSample.getRemoteAddress64();
@@ -704,6 +729,8 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
 
 
 
