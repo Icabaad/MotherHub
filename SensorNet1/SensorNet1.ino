@@ -251,7 +251,7 @@ void loop() {
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
 
-      if(xbee = 1084373003){ //Watermeter
+      if(xbee == 1084373003) { //Watermeter
 
         waterTimer ++;
         waterTimer2 ++;
@@ -284,9 +284,20 @@ void loop() {
         }
       }
 
+if(xbee == 1081730797) { //powermeter
+        Serial.println("Power Meter");
+        String realPower1 = xbeeReadString.substring(19, 25);
+        String realPower2 = xbeeReadString.substring(26, 34);
+        
+                Serial.print("CT1 Real Power:");
+        Serial.print(realPower1);
+                Serial.print("CT2 Real Power:");
+        Serial.print(realPower2);
+}
+
       xbeeReadString = " ";
     }
-
+// XBEE IO Samples
     else if (xbee.getResponse().getApiId() == ZB_IO_SAMPLE_RESPONSE) {
       xbee.getResponse().getZBRxIoSampleResponse(ioSample);
       XBeeAddress64 senderLongAddress = ioSample.getRemoteAddress64();
@@ -295,7 +306,7 @@ void loop() {
 
       if (ioSample.containsAnalog()) {
         Serial.println("Sample contains analog data");
-        Serial.print("Received I/O Sample from: ");
+        Serial.println("Received I/O Sample from: ");
         // this is how you get the 64 bit address out of
         // the incoming packet so you know which device
         // it came from
