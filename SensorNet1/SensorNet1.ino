@@ -205,7 +205,8 @@ void loop() {
       print16Bits(senderShortAddress);
       Serial.println(")");
 
-      Serial.println(senderLongAddress.getLsb());
+Serial.print(" ");
+      Serial.print(senderLongAddress.getLsb());
       uint32_t xbee = (senderLongAddress.getLsb());  
 
       // The option byte is a bit field
@@ -217,7 +218,8 @@ void loop() {
         Serial.println("broadcast Packet");
 
       Serial.print("checksum is ");
-      Serial.println(rx.getChecksum(), HEX);
+      Serial.print(rx.getChecksum(), HEX);
+Serial.print(" ");
 
       // this is the packet length
       Serial.print("packet length is ");
@@ -234,7 +236,7 @@ void loop() {
         print8Bits(rx.getData()[i]);
         Serial.print(" ");
       }
-      // and an ascii representation for those of us
+   /*   // and an ascii representation for those of us
       // that send text through the XBee
       Serial.println();
       for (int i= 0; i < rx.getDataLength(); i++){
@@ -245,6 +247,7 @@ void loop() {
           Serial.print(rx.getData()[i]);
         //     Serial.write(' ');
       }
+      */
       Serial.println();
       // So, for example, you could do something like this:
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
@@ -286,15 +289,15 @@ void loop() {
 
       if(xbee == 1081730797) { //powermeter
         Serial.println("Power Meter");
-        String realPower1 = xbeeReadString.substring(19, 25);
-        String realPower2 = xbeeReadString.substring(26, 34);
-        String realPower3 = xbeeReadString.substring(35, 43);
-        String realPower4 = xbeeReadString.substring(44, 52);
-        String Irms1 = xbeeReadString.substring(53, 59);
-        String Irms2 = xbeeReadString.substring(60, 66);
-        String Irms3 = xbeeReadString.substring(67, 73);
-        String Irms4 = xbeeReadString.substring(74, 80);
-        String Vrms = xbeeReadString.substring(81, 88);
+        String realPower1 = xbeeReadString.substring(17, 24);
+        String realPower2 = xbeeReadString.substring(26, 32);
+        String realPower3 = xbeeReadString.substring(34, 40);
+        String realPower4 = xbeeReadString.substring(42, 48);
+        String Irms1 = xbeeReadString.substring(50, 54);
+        String Irms2 = xbeeReadString.substring(56, 60);
+        String Irms3 = xbeeReadString.substring(62, 66);
+        String Irms4 = xbeeReadString.substring(68, 72);
+        String Vrms = xbeeReadString.substring(74, 79);
 
         Serial.print("CT1 Real Power:");
         Serial.println(realPower1);
@@ -330,7 +333,7 @@ void loop() {
       uint32_t xbee = (senderLongAddress.getLsb());
 
       if (ioSample.containsAnalog()) {
-        Serial.println("Sample contains analog data");
+       // Serial.println("Sample contains analog data");
         Serial.println("Received I/O Sample from: ");
         // this is how you get the 64 bit address out of
         // the incoming packet so you know which device
@@ -377,6 +380,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
+                Serial2.flush();
       }
       if (xbee == 1081730917) {
         Serial.println("Bedroom");
@@ -395,6 +399,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Bedroom Xbee Voltage Not logged");
         datastreams[6].setFloat(xbee1v);
+                Serial2.flush();
       }
 
       //this is else causes code to not upload properly.....????
@@ -410,6 +415,7 @@ void loop() {
   else if (xbee.getResponse().isError()) {
     Serial.print("Error reading packet.  Error code: ");  
     Serial.println(xbee.getResponse().getErrorCode());  
+            Serial2.flush();
   }
   //  else {
   //*****************************************************
