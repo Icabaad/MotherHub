@@ -109,7 +109,7 @@ String xbeeReadString = "";
 
 //***************************************************
 void setup() {
-  Serial.begin(9600);  //Debug
+  Serial.begin(19200);  //Debug
   Serial1.begin(9600); //Currentcost chat
   Serial2.begin(9600); //Xbee chat
   Serial3.begin(9600); //Output to pi
@@ -205,7 +205,7 @@ void loop() {
       print16Bits(senderShortAddress);
       Serial.println(")");
 
-Serial.print(" ");
+      Serial.print(" ");
       Serial.print(senderLongAddress.getLsb());
       uint32_t xbee = (senderLongAddress.getLsb());  
 
@@ -219,7 +219,7 @@ Serial.print(" ");
 
       Serial.print("checksum is ");
       Serial.print(rx.getChecksum(), HEX);
-Serial.print(" ");
+      Serial.print(" ");
 
       // this is the packet length
       Serial.print("packet length is ");
@@ -236,18 +236,18 @@ Serial.print(" ");
         print8Bits(rx.getData()[i]);
         Serial.print(" ");
       }
-   /*   // and an ascii representation for those of us
-      // that send text through the XBee
-      Serial.println();
-      for (int i= 0; i < rx.getDataLength(); i++){
-        //     Serial.write(' ');
-        if (iscntrl(rx.getData()[i]));
-        //       Serial.write(' ');
-        else
-          Serial.print(rx.getData()[i]);
-        //     Serial.write(' ');
-      }
-      */
+      /*   // and an ascii representation for those of us
+       // that send text through the XBee
+       Serial.println();
+       for (int i= 0; i < rx.getDataLength(); i++){
+       //     Serial.write(' ');
+       if (iscntrl(rx.getData()[i]));
+       //       Serial.write(' ');
+       else
+       Serial.print(rx.getData()[i]);
+       //     Serial.write(' ');
+       }
+       */
       Serial.println();
       // So, for example, you could do something like this:
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
@@ -289,38 +289,54 @@ Serial.print(" ");
 
       if(xbee == 1081730797) { //powermeter
         Serial.println("Power Meter");
-        String realPower1 = xbeeReadString.substring(17, 24);
-        String realPower2 = xbeeReadString.substring(26, 32);
-        String realPower3 = xbeeReadString.substring(34, 40);
-        String realPower4 = xbeeReadString.substring(42, 48);
-        String Irms1 = xbeeReadString.substring(50, 54);
-        String Irms2 = xbeeReadString.substring(56, 60);
-        String Irms3 = xbeeReadString.substring(62, 66);
-        String Irms4 = xbeeReadString.substring(68, 72);
-        String Vrms = xbeeReadString.substring(74, 79);
 
+        String xbeeReadString2 = xbeeReadString.substring(17, 66);
+        Serial.print("String1=");
+        Serial.println(xbeeReadString);
+        Serial.print("String2=");
+        Serial.println(xbeeReadString2);
+        /*    
+         int first = xbeeReadString.indexOf(',');
+         Serial.println(first);
+         int second = xbeeReadString.indexOf(',', first + 1 );
+         Serial.println(second);
+         String realPower1 = xbeeReadString.substring(first, second);
+         */
+        String realPower1 = xbeeReadString.substring(18, 26);
+        String realPower2 = xbeeReadString.substring(27, 35);
+        String realPower3 = xbeeReadString.substring(36, 44);
+        String realPower4 = xbeeReadString.substring(45, 53);
+         String Irms1 = xbeeReadString.substring(54, 59);
+         String Irms2 = xbeeReadString.substring(60, 65);
+         String Irms3 = xbeeReadString.substring(66, 71);
+         String Irms4 = xbeeReadString.substring(72, 77);
+         String Vrms = xbeeReadString.substring(78, 88);
+         
         Serial.print("CT1 Real Power:");
         Serial.println(realPower1);
+
         Serial.print("CT2 Real Power:");
         Serial.println(realPower2);
         Serial.print("CT3 Real Power:");
         Serial.println(realPower3);
         Serial.print("CT3 Real Power:");
         Serial.println(realPower4);
-
-        Serial.print("CT1 Current:");
-        Serial.println(Irms1);
-        Serial.print("CT2 Current:");
-        Serial.println(Irms2);
-        Serial.print("CT3 Current:");
-        Serial.println(Irms3);
-        Serial.print("CT4 Current:");
-        Serial.println(Irms4);
-
-        Serial.print("Line Voltage:");
-        Serial.println(Vrms);
         
-                Serial2.flush();
+        Serial.print("CT1 Current:");
+         Serial.println(Irms1);
+         Serial.print("CT2 Current:");
+         Serial.println(Irms2);
+         Serial.print("CT3 Current:");
+         Serial.println(Irms3);
+         Serial.print("CT4 Current:");
+         Serial.println(Irms4);
+         
+         Serial.print("Line Voltage:");
+         Serial.println(Vrms);
+         
+        xbeeReadString2 = "";
+        Serial2.flush();
+
       }
 
       xbeeReadString = " ";
@@ -333,7 +349,7 @@ Serial.print(" ");
       uint32_t xbee = (senderLongAddress.getLsb());
 
       if (ioSample.containsAnalog()) {
-       // Serial.println("Sample contains analog data");
+        // Serial.println("Sample contains analog data");
         Serial.println("Received I/O Sample from: ");
         // this is how you get the 64 bit address out of
         // the incoming packet so you know which device
@@ -380,7 +396,7 @@ Serial.print(" ");
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
-                Serial2.flush();
+        Serial2.flush();
       }
       if (xbee == 1081730917) {
         Serial.println("Bedroom");
@@ -399,7 +415,7 @@ Serial.print(" ");
         Serial.print(xbee1v); 
         Serial.println(" Bedroom Xbee Voltage Not logged");
         datastreams[6].setFloat(xbee1v);
-                Serial2.flush();
+        Serial2.flush();
       }
 
       //this is else causes code to not upload properly.....????
@@ -415,7 +431,7 @@ Serial.print(" ");
   else if (xbee.getResponse().isError()) {
     Serial.print("Error reading packet.  Error code: ");  
     Serial.println(xbee.getResponse().getErrorCode());  
-            Serial2.flush();
+    Serial2.flush();
   }
   //  else {
   //*****************************************************
@@ -735,6 +751,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
 
 
 
