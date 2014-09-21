@@ -107,6 +107,16 @@ int values[fNumber]; //array holding values
 
 String xbeeReadString = "";
 
+String realPower1 = "";
+String realPower2 = "";
+String realPower3 = "";
+String realPower4 = "";
+String Irms1 = "";
+String Irms2 = "";
+String Irms3 = "";
+String Irms4 = "";
+String Vrms = "";
+
 //***************************************************
 void setup() {
   Serial.begin(19200);  //Debug
@@ -302,38 +312,40 @@ void loop() {
          Serial.println(second);
          String realPower1 = xbeeReadString.substring(first, second);
          */
-        String realPower1 = xbeeReadString.substring(18, 26);
-        String realPower2 = xbeeReadString.substring(27, 35);
-        String realPower3 = xbeeReadString.substring(36, 44);
-        String realPower4 = xbeeReadString.substring(45, 53);
-         String Irms1 = xbeeReadString.substring(54, 59);
-         String Irms2 = xbeeReadString.substring(60, 65);
-         String Irms3 = xbeeReadString.substring(66, 71);
-         String Irms4 = xbeeReadString.substring(72, 77);
-         String Vrms = xbeeReadString.substring(78, 88);
-         
-        Serial.print("CT1 Real Power:");
+        realPower1 = xbeeReadString.substring(18, 26);
+        realPower2 = xbeeReadString.substring(27, 35);
+        realPower3 = xbeeReadString.substring(36, 44);
+        realPower4 = xbeeReadString.substring(45, 53);
+        Irms1 = xbeeReadString.substring(54, 59);
+        Irms2 = xbeeReadString.substring(60, 65);
+        Irms3 = xbeeReadString.substring(66, 71);
+        Irms4 = xbeeReadString.substring(72, 77);
+        Vrms = xbeeReadString.substring(78, 84);
+        
+        
+
+        Serial.print("CT1 Solar:");
         Serial.println(realPower1);
 
         Serial.print("CT2 Real Power:");
         Serial.println(realPower2);
-        Serial.print("CT3 Real Power:");
+        Serial.print("CT3 Hydro:");
         Serial.println(realPower3);
-        Serial.print("CT3 Real Power:");
+        Serial.print("CT4 Total Power:");
         Serial.println(realPower4);
-        
+
         Serial.print("CT1 Current:");
-         Serial.println(Irms1);
-         Serial.print("CT2 Current:");
-         Serial.println(Irms2);
-         Serial.print("CT3 Current:");
-         Serial.println(Irms3);
-         Serial.print("CT4 Current:");
-         Serial.println(Irms4);
-         
-         Serial.print("Line Voltage:");
-         Serial.println(Vrms);
-         
+        Serial.println(Irms1);
+        Serial.print("CT2 Current:");
+        Serial.println(Irms2);
+        Serial.print("CT3 Current:");
+        Serial.println(Irms3);
+        Serial.print("CT4 Current:");
+        Serial.println(Irms4);
+
+        Serial.print("Line Voltage:");
+        Serial.println(Vrms);
+
         xbeeReadString2 = "";
         Serial2.flush();
 
@@ -627,6 +639,26 @@ void loop() {
       client.print(datastreams[14].getFloat());
       client.print(",Bedroom1Temp:");
       client.print(datastreams[15].getFloat());
+
+      client.print(",TotalPower:");
+      client.print(realPower4);
+      client.print(",Solar:");
+      client.print(realPower1);  
+      client.print(",PowerP:");
+      client.print(realPower2);
+      client.print(",HotwaterHeater:");
+      client.print(realPower3);
+      client.print(",TotalCurrent:");
+      client.print(Irms4);
+      client.print(",SolarCurrent:");
+      client.print(Irms1);  
+      client.print(",PowerPCurrent:");
+      client.print(Irms2);
+      client.print(",HydroCurrent:");
+      client.print(Irms3);
+      client.print(",LineVoltage:");
+      client.print(Vrms);
+
       client.print("}&apikey=");
       client.print(apiKey);         //assuming APIKEY is a char or string
       client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
@@ -751,6 +783,8 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
 
 
 
