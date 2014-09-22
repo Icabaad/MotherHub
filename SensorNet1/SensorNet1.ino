@@ -54,6 +54,7 @@ char sensorId12[] = "Water_Usage";
 char sensorId13[] = "Water_Usage_Hourly";
 char sensorId14[] = "Water_Usage_Daily";
 char sensorId15[] = "Bedroom1_Temp";
+char sensorId16[] = "Laundry_Temp";
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
@@ -75,7 +76,8 @@ XivelyDatastream datastreams[] = {
   XivelyDatastream(sensorId12, strlen(sensorId12), DATASTREAM_FLOAT),
   XivelyDatastream(sensorId13, strlen(sensorId13), DATASTREAM_FLOAT),
   XivelyDatastream(sensorId14, strlen(sensorId14), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId15, strlen(sensorId14), DATASTREAM_FLOAT),
+  XivelyDatastream(sensorId15, strlen(sensorId15), DATASTREAM_FLOAT),
+  XivelyDatastream(sensorId16, strlen(sensorId16), DATASTREAM_FLOAT),
   // XivelyDatastream(bufferId, strlen(bufferId), DATASTREAM_BUFFER, bufferValue, bufferSize),
   // XivelyDatastream(stringId, DATASTREAM_STRING)
 };
@@ -301,7 +303,7 @@ void loop() {
 
       int packetSize = xbeeReadString.length();
       if(xbee == 1081730797 && packetSize > 20) { //powermeter
-        Serial.println("Power Meter");
+        Serial.println("=========Power Meter=========");
         Serial.print("Packet Size: ");         
         Serial.println(packetSize,DEC);
         String xbeeReadString2 = xbeeReadString.substring(17, 66);
@@ -320,7 +322,7 @@ void loop() {
         realPower2 = xbeeReadString.substring(27, 35);
         realPower3 = xbeeReadString.substring(36, 44);
         realPower4 = xbeeReadString.substring(45, 53);
-        
+
         char floatbuf[8]; // make this at least big enough for the whole string
         realPower4.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower4 = atof(floatbuf);
@@ -347,8 +349,8 @@ void loop() {
           client.print(realPower3);
           client.print(",PowerandLights:");
           client.print(realPower5);
-      
-          
+
+
           client.print(",TotalCurrent:");
           client.print(Irms4);
           client.print(",SolarCurrent:");
@@ -426,7 +428,7 @@ void loop() {
         }
       }
       if (xbee == 1083188734) {
-        Serial.println("Outside");
+        Serial.println("==========Outside==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
         voltage /= 1024.0; 
@@ -459,7 +461,7 @@ void loop() {
         Serial2.flush();
       }
       if (xbee == 1081730917) {
-        Serial.println("Bedroom");
+        Serial.println("==========Bedroom==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
         voltage /= 1024.0; 
@@ -478,30 +480,48 @@ void loop() {
       }
 
       if (xbee == 1082562186) {
-        Serial.println("==========TESTER==========");
+        Serial.println("==========Tester==========");
         int reading = (ioSample.getAnalog(0));
-     
         int vReading3 = (ioSample.getAnalog(7));
         float xbee1v = vReading3 * 1.2 / 1024;      
         Serial.print(xbee1v); 
         Serial.println(" Test Xbee Voltage Not logged");
         Serial2.flush();
-        }
       }
 
-        
-        
-    
+      if (xbee == 1081730917) {
+        Serial.println("==========Laundry==========");
+        int reading = (ioSample.getAnalog(0));
+        float voltage = reading * 1.2;
+        voltage /= 1024.0; 
+        float temperatureC = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+        //to degrees ((volatge - 500mV) times 100)
+        Serial.print(temperatureC); 
+        Serial.print(" degrees C ");
+        datastreams[16].setFloat(temperatureC);
+
+        int vReading3 = (ioSample.getAnalog(7));
+        float xbee1v = vReading3 * 1.2 / 1024;      
+        Serial.print(xbee1v); 
+        Serial.println(" Xbee Voltage Not logged");
+        Serial2.flush();     
+      }
+    }
+
     else {
       Serial.print("Expected I/O Sample, but got ");
       Serial.print(xbee.getResponse().getApiId(), HEX);
-    }    
-  } 
+    }   
+  }
+
   else if (xbee.getResponse().isError()) {
     Serial.print("Error reading packet.  Error code: ");  
     Serial.println(xbee.getResponse().getErrorCode());  
     Serial2.flush();
   }
+
+
+
   //  else {
   //*****************************************************
   //         Power receipt
@@ -696,6 +716,8 @@ void loop() {
       client.print(datastreams[14].getFloat());
       client.print(",Bedroom1Temp:");
       client.print(datastreams[15].getFloat());
+      client.print(",LaundryTemp:");
+      client.print(datastreams[16].getFloat());
 
       /* Moved out of main timer to 10 second one
        client.print(",TotalPower:");
@@ -841,6 +863,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
 
 
 
