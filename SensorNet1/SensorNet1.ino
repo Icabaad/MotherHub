@@ -474,15 +474,24 @@ void loop() {
         // voltage /= 1024.0; 
         Serial.print(xbee1v); 
         Serial.println(" Bedroom Xbee Voltage Not logged");
-        datastreams[6].setFloat(xbee1v);
         Serial2.flush();
       }
 
-      //this is else causes code to not upload properly.....????
-      //      else if (test == 1082562186) {
-      //        Serial.println("Xbee 3!!!!! - Not Processing!");
-      //      }
-    }
+      if (xbee == 1082562186) {
+        Serial.println("==========TESTER==========");
+        int reading = (ioSample.getAnalog(0));
+     
+        int vReading3 = (ioSample.getAnalog(7));
+        float xbee1v = vReading3 * 1.2 / 1024;      
+        Serial.print(xbee1v); 
+        Serial.println(" Test Xbee Voltage Not logged");
+        Serial2.flush();
+        }
+      }
+
+        
+        
+    
     else {
       Serial.print("Expected I/O Sample, but got ");
       Serial.print(xbee.getResponse().getApiId(), HEX);
