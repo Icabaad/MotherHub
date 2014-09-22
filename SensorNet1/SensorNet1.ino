@@ -297,9 +297,11 @@ void loop() {
         }
       }
 
-      if(xbee == 1081730797) { //powermeter
-        Serial.println("Power Meter");
 
+int packetSize = xbeeReadString.length();
+      if(xbee == 1081730797 && packetSize > 20) { //powermeter
+        Serial.println("Power Meter");
+   Serial.print("Packet Size: ");         Serial.println(packetSize,DEC);
         String xbeeReadString2 = xbeeReadString.substring(17, 66);
         Serial.print("String1=");
         Serial.println(xbeeReadString);
@@ -323,7 +325,40 @@ void loop() {
         Vrms = xbeeReadString.substring(78, 84);
         
         
+            //EmonCMS
+    if(client.connect("emoncms.org",80)){
+      Serial.println("Connecting.....");
+      client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
 
+      client.print("TotalPower:");
+      client.print(realPower4);
+      client.print(",Solar:");
+      client.print(realPower1);  
+      client.print(",PowerP:");
+      client.print(realPower2);
+      client.print(",HotwaterHeater:");
+      client.print(realPower3);
+      client.print(",TotalCurrent:");
+      client.print(Irms4);
+      client.print(",SolarCurrent:");
+      client.print(Irms1);  
+      client.print(",PowerPCurrent:");
+      client.print(Irms2);
+      client.print(",HydroCurrent:");
+      client.print(Irms3);
+      client.print(",LineVoltage:");
+      client.print(Vrms);
+
+      client.print("}&apikey=");
+      client.print(apiKey);         //assuming APIKEY is a char or string
+      client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+      client.println("Host: emoncms.org");
+      client.println("User-Agent: Arduino-ethernet");
+      client.println("Connection: close");     //    Although not technically necessary, I found this helpful
+      client.println();
+      client.stop();
+              Serial.print("****EmonCMS Logged****");
+    }
         Serial.print("CT1 Solar:");
         Serial.println(realPower1);
 
@@ -639,7 +674,8 @@ void loop() {
       client.print(datastreams[14].getFloat());
       client.print(",Bedroom1Temp:");
       client.print(datastreams[15].getFloat());
-
+      
+/* Moved out of main timer to 10 second one
       client.print(",TotalPower:");
       client.print(realPower4);
       client.print(",Solar:");
@@ -658,7 +694,7 @@ void loop() {
       client.print(Irms3);
       client.print(",LineVoltage:");
       client.print(Vrms);
-
+*/
       client.print("}&apikey=");
       client.print(apiKey);         //assuming APIKEY is a char or string
       client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
@@ -666,7 +702,7 @@ void loop() {
       client.println("User-Agent: Arduino-ethernet");
       client.println("Connection: close");     //    Although not technically necessary, I found this helpful
       client.println();
-
+      client.stop();
 
       Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
       Serial.print("CommsMotion:");
@@ -709,7 +745,7 @@ void loop() {
       Serial.println();
 
       Serial.println("Upload to EmonCMS Completed");
-      client.stop();
+
     }
     else {
       Serial.println("Upload to EmonCMS Failed *************");
