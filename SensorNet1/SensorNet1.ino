@@ -458,6 +458,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
+                Serial.println("==========================");
         Serial2.flush();
       }
       if (xbee == 1081730917) {
@@ -476,6 +477,7 @@ void loop() {
         // voltage /= 1024.0; 
         Serial.print(xbee1v); 
         Serial.println(" Bedroom Xbee Voltage Not logged");
+        Serial.println("==========================");
         Serial2.flush();
       }
 
@@ -487,6 +489,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Test Xbee Voltage Not logged");
         Serial2.flush();
+        Serial.println("==========================");
       }
 
       if (xbee == 1083645575) {
@@ -505,6 +508,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage Not logged");
         Serial2.flush();     
+                Serial.println("==========================");
       }
     }
 
