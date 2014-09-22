@@ -111,6 +111,7 @@ String realPower1 = "";
 String realPower2 = "";
 String realPower3 = "";
 String realPower4 = "";
+float realPower5 = 0;
 String Irms1 = "";
 String Irms2 = "";
 String Irms3 = "";
@@ -319,19 +320,24 @@ void loop() {
         realPower2 = xbeeReadString.substring(27, 35);
         realPower3 = xbeeReadString.substring(36, 44);
         realPower4 = xbeeReadString.substring(45, 53);
+        
+        char floatbuf[8]; // make this at least big enough for the whole string
+        realPower4.toCharArray(floatbuf, sizeof(floatbuf));
+        float fltPower4 = atof(floatbuf);
+        realPower3.toCharArray(floatbuf, sizeof(floatbuf));
+        float fltPower3 = atof(floatbuf);
+        realPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
         Irms1 = xbeeReadString.substring(54, 59);
         Irms2 = xbeeReadString.substring(60, 65);
         Irms3 = xbeeReadString.substring(66, 71);
         Irms4 = xbeeReadString.substring(72, 77);
         Vrms = xbeeReadString.substring(78, 84);
 
-
         //EmonCMS
+        Serial.println("Connecting.....");
         if(client.connect("emoncms.org",80)){
-          Serial.println("Connecting.....");
           client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-
-            client.print("TotalPower:");
+          client.print("TotalPower:");
           client.print(realPower4);
           client.print(",Solar:");
           client.print(realPower1);  
@@ -339,6 +345,10 @@ void loop() {
           client.print(realPower2);
           client.print(",HotwaterHeater:");
           client.print(realPower3);
+          client.print(",PowerandLights:");
+          client.print(realPower5);
+      
+          
           client.print(",TotalCurrent:");
           client.print(Irms4);
           client.print(",SolarCurrent:");
@@ -363,12 +373,14 @@ void loop() {
         Serial.print("CT1 Solar:");
         Serial.println(realPower1);
 
-        Serial.print("CT2 Real Power:");
+        Serial.print("CT2 Spare: ");
         Serial.println(realPower2);
-        Serial.print("CT3 Hydro:");
+        Serial.print("CT3 Hydro: ");
         Serial.println(realPower3);
-        Serial.print("CT4 Total Power:");
+        Serial.print("CT4 Total Power: ");
         Serial.println(realPower4);
+        Serial.print("powerpoints and Lights: ");
+        Serial.println(realPower5);
 
         Serial.print("CT1 Current:");
         Serial.println(Irms1);
@@ -820,6 +832,8 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
 
 
 
