@@ -489,7 +489,7 @@ void loop() {
         Serial2.flush();
       }
 
-      if (xbee == 1081730917) {
+      if (xbee == 1083645575) {
         Serial.println("==========Laundry==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
