@@ -268,7 +268,7 @@ void loop() {
       Serial.println(xbeeReadString);
 
       if(xbee == 1084373003) { //Watermeter
-
+        Serial.println("=========Water Meter=========");
         waterTimer ++;
         waterTimer2 ++;
         String water = xbeeReadString.substring(19, 25);
@@ -289,6 +289,7 @@ void loop() {
         Serial.print("water use:");
         Serial.print(waterDaily);
         Serial.println("L/day");
+            Serial.println("===========================");
         Serial2.flush();
         if(waterTimer2 == 60) { //Need to introduce a RTC to sync times with RL hours etc
           waterHourly = 0;
@@ -395,8 +396,8 @@ void loop() {
 
         Serial.print("Line Voltage:");
         Serial.println(Vrms);
+        Serial.println("===========================");
 
-        xbeeReadString2 = "";
         Serial2.flush();
 
       }
@@ -458,7 +459,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage");
         datastreams[6].setFloat(xbee1v);
-                Serial.println("==========================");
+                Serial.println("===========================");
         Serial2.flush();
       }
       if (xbee == 1081730917) {
@@ -477,7 +478,7 @@ void loop() {
         // voltage /= 1024.0; 
         Serial.print(xbee1v); 
         Serial.println(" Bedroom Xbee Voltage Not logged");
-        Serial.println("==========================");
+        Serial.println("===========================");
         Serial2.flush();
       }
 
@@ -489,7 +490,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Test Xbee Voltage Not logged");
         Serial2.flush();
-        Serial.println("==========================");
+        Serial.println("===========================");
       }
 
       if (xbee == 1083645575) {
@@ -508,7 +509,7 @@ void loop() {
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage Not logged");
         Serial2.flush();     
-                Serial.println("==========================");
+                Serial.println("===========================");
       }
     }
 
@@ -526,13 +527,14 @@ void loop() {
 
 
 
-  //  else {
+ 
   //*****************************************************
   //         Power receipt
   //*****************************************************
-  //Serial.print("power....");
+  
 
   if (timer >= 5000) {
+    Serial.println("==========CurrentCost==========");
     Serial1.write("S");
     Serial.println();
     Serial.println("Power Request Sent...");
@@ -575,6 +577,7 @@ void loop() {
     Serial.println();
 
     fieldIndex = 0; //reset
+    Serial.println("===========================");
     Serial1.flush();
     //  }
   }
@@ -687,6 +690,7 @@ void loop() {
     //EmonCMS
     if(client.connect("emoncms.org",80)){
       Serial.print("Connecting.....");
+    Serial.println("==========EMONCMS==========");
       client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
       client.print("CommsMotion:");
       client.print(datastreams[0].getInt());
@@ -793,7 +797,7 @@ void loop() {
       Serial.println();
 
       Serial.println("Upload to EmonCMS Completed");
-
+    Serial.println("===========================");
     }
     else {
       Serial.println("Upload to EmonCMS Failed *************");
