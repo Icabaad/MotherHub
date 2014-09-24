@@ -779,7 +779,7 @@ void loop() {
       client.println("User-Agent: Arduino-ethernet");
       client.println("Connection: close");     //    Although not technically necessary, I found this helpful
       client.println();
-      //client.stop();
+      client.stop();
 
       Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
       Serial.print("CommsMotion:");
