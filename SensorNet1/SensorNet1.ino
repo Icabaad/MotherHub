@@ -338,9 +338,9 @@ void loop() {
 
         //EmonCMS
         Serial.println("Connecting.....");
-        if(client.connect("emoncms.org",80)){
-          client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-          client.print("TotalPower:");
+        if(client.connect("80.243.190.58",80)){
+          client.print("GET /input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
+          //client.print("TotalPower:");
           client.print(realPower4);
           client.print(",Solar:");
           client.print(realPower1);  
@@ -350,8 +350,6 @@ void loop() {
           client.print(realPower3);
           client.print(",PowerandLights:");
           client.print(realPower5);
-
-
           client.print(",TotalCurrent:");
           client.print(Irms4);
           client.print(",SolarCurrent:");
@@ -362,7 +360,6 @@ void loop() {
           client.print(Irms3);
           client.print(",LineVoltage:");
           client.print(Vrms);
-
           client.print("}&apikey=");
           client.print(apiKey);         //assuming APIKEY is a char or string
           client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
@@ -373,25 +370,30 @@ void loop() {
           client.stop();
           Serial.println("****EmonCMS Logged****");
         }
+            else {
+      Serial.println("*************Upload to EmonCMS Failed *************");
+      client.stop();
+            }
+            
         Serial.print("CT1 Solar:");
-        Serial.println(realPower1);
+        Serial.print(realPower1);
 
-        Serial.print("CT2 Spare: ");
-        Serial.println(realPower2);
-        Serial.print("CT3 Hydro: ");
-        Serial.println(realPower3);
-        Serial.print("CT4 Total Power: ");
-        Serial.println(realPower4);
-        Serial.print("powerpoints and Lights: ");
+        Serial.print("  CT2 Spare: ");
+        Serial.print(realPower2);
+        Serial.print("  CT3 Hydro: ");
+        Serial.print(realPower3);
+        Serial.print("  CT4 Total: ");
+        Serial.print(realPower4);
+        Serial.print("  PP/Lights: ");
         Serial.println(realPower5);
 
         Serial.print("CT1 Current:");
-        Serial.println(Irms1);
-        Serial.print("CT2 Current:");
-        Serial.println(Irms2);
-        Serial.print("CT3 Current:");
-        Serial.println(Irms3);
-        Serial.print("CT4 Current:");
+        Serial.print(Irms1);
+        Serial.print("  CT2 Current:");
+        Serial.print(Irms2);
+        Serial.print("  CT3 Current:");
+        Serial.print(Irms3);
+        Serial.print("  CT4 Current:");
         Serial.println(Irms4);
 
         Serial.print("Line Voltage:");
@@ -688,11 +690,11 @@ void loop() {
 
 
     //EmonCMS
-    if(client.connect("emoncms.org",80)){
-      Serial.print("Connecting.....");
+    if(client.connect("80.243.190.58",80)){
+      Serial.println("Connecting.....");
     Serial.println("==========EMONCMS==========");
-      client.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-      client.print("CommsMotion:");
+      client.print("GET /input/post.json?json={CommsMotion:");  // make sure there is a [space] between GET and /input
+   //   client.print("CommsMotion:");
       client.print(datastreams[0].getInt());
       client.print(",CommsTemp:");
       client.print(datastreams[1].getFloat());
@@ -726,7 +728,30 @@ void loop() {
       client.print(datastreams[15].getFloat());
       client.print(",LaundryTemp:");
       client.print(datastreams[16].getFloat());
+/*
+          client.print(",TotalPower:");
+          client.print(realPower4);
+          client.print(",Solar:");
+          client.print(realPower1);  
+          client.print(",PowerP:");
+          client.print(realPower2);
+          client.print(",HotwaterHeater:");
+          client.print(realPower3);
+          client.print(",PowerandLights:");
+          client.print(realPower5);
 
+
+          client.print(",TotalCurrent:");
+          client.print(Irms4);
+          client.print(",SolarCurrent:");
+          client.print(Irms1);  
+          client.print(",PowerPCurrent:");
+          client.print(Irms2);
+          client.print(",HydroCurrent:");
+          client.print(Irms3);
+          client.print(",LineVoltage:");
+          client.print(Vrms);
+          */
       /* Moved out of main timer to 10 second one
        client.print(",TotalPower:");
        client.print(realPower4);
@@ -754,7 +779,7 @@ void loop() {
       client.println("User-Agent: Arduino-ethernet");
       client.println("Connection: close");     //    Although not technically necessary, I found this helpful
       client.println();
-      client.stop();
+      //client.stop();
 
       Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
       Serial.print("CommsMotion:");
