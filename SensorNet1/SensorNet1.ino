@@ -121,6 +121,8 @@ String Irms3 = "";
 String Irms4 = "";
 String Vrms = "";
 
+int packetSize = xbeeReadString.length(); 
+
 //***************************************************
 void setup() {
   Serial.begin(19200);  //Debug
@@ -267,6 +269,7 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
+              packetSize = xbeeReadString.length(); 
 
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
@@ -292,6 +295,8 @@ void loop() {
         Serial.println("L/day");
         Serial.println("===========================");
         Serial2.flush();
+ xbeeReadString = "";
+      xbeeReadString2 = "";
         if(waterTimer2 == 60) { //Need to introduce a RTC to sync times with RL hours etc
           waterHourly = 0;
           waterTimer2 = 0;
@@ -302,8 +307,54 @@ void loop() {
         }
       }
 
+      if(xbee == 1081730785 && packetSize > 40) { //Foyeur
+        Serial.println("=========Foyeur=========");
+        String xbeeReadString2 = xbeeReadString.substring(17, 48);
+        Serial.print("String1=");
+        Serial.println(xbeeReadString);
+        Serial.print("String2=");
+        Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
 
-      int packetSize = xbeeReadString.length();
+        String foyeurLux = xbeeReadString2.substring(0, 5);
+        String hotWaterHot = xbeeReadString2.substring(6, 11);
+        String hotWaterCold = xbeeReadString2.substring(12, 17);
+        String foyeurHumidity = xbeeReadString2.substring(18, 23);
+        String foyeurTemp = xbeeReadString2.substring(24, 29);
+        String FoyeurMotion = xbeeReadString2.substring(30, 31);
+        
+                      Serial.print("Light Lux: ");         
+        Serial.println(foyeurLux);
+                Serial.print("Hot Water Hot: ");         
+        Serial.println(hotWaterHot);
+                Serial.print("Hot Water Cold: ");         
+        Serial.println(hotWaterCold);
+                Serial.print("Foyeur Humidity: ");         
+        Serial.println(foyeurHumidity);
+                Serial.print("Foyeur Temp: ");         
+        Serial.println(foyeurTemp);
+                Serial.print("Foyeur Motion: ");         
+        Serial.println(FoyeurMotion);
+        
+      xbeeReadString = "";
+      xbeeReadString2 = "";
+           
+      }
+   
+       if(xbee == 1081730785 && packetSize < 35) {
+        Serial.println("=========Foyeur=========");
+        String xbeeReadString2 = xbeeReadString.substring(17, 32);
+        Serial.print("String1=");
+        Serial.println(xbeeReadString);
+        Serial.print("String2=");
+        Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
+        String FoyeurMotion = xbeeReadString2.substring(0, 1);
+        Serial.print("Foyeur Motion: ");         
+        Serial.println(FoyeurMotion);
+      xbeeReadString = "";
+      xbeeReadString2 = "";
+    }
+        
+ 
       if(xbee == 1081730797 && packetSize > 20) { //powermeter
         Serial.println("=========Power Meter=========");
         Serial.print("Packet Size: ");         
@@ -414,11 +465,12 @@ Irms4.trim();
         Serial.println("===========================");
 
         Serial2.flush();
+      xbeeReadString = "";
+      xbeeReadString2 = "";
 
       }
 
-      xbeeReadString = "";
-      xbeeReadString2 = "";
+
     }
     // XBEE IO Samples
     else if (xbee.getResponse().getApiId() == ZB_IO_SAMPLE_RESPONSE) {
