@@ -121,6 +121,13 @@ String Irms3 = "";
 String Irms4 = "";
 String Vrms = "";
 
+String foyeurLux = "";
+String hotWaterHot = "";
+String hotWaterCold = "";
+String foyeurHumidity = "";
+String foyeurTemp = "";
+String FoyeurMotion = "";
+
 int packetSize = xbeeReadString.length(); 
 
 //***************************************************
@@ -269,7 +276,7 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
-              packetSize = xbeeReadString.length(); 
+      packetSize = xbeeReadString.length(); 
 
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
@@ -295,8 +302,8 @@ void loop() {
         Serial.println("L/day");
         Serial.println("===========================");
         Serial2.flush();
- xbeeReadString = "";
-      xbeeReadString2 = "";
+        xbeeReadString = "";
+        xbeeReadString2 = "";
         if(waterTimer2 == 60) { //Need to introduce a RTC to sync times with RL hours etc
           waterHourly = 0;
           waterTimer2 = 0;
@@ -315,32 +322,38 @@ void loop() {
         Serial.print("String2=");
         Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
 
-        String foyeurLux = xbeeReadString2.substring(0, 5);
-        String hotWaterHot = xbeeReadString2.substring(6, 11);
-        String hotWaterCold = xbeeReadString2.substring(12, 17);
-        String foyeurHumidity = xbeeReadString2.substring(18, 23);
-        String foyeurTemp = xbeeReadString2.substring(24, 29);
-        String FoyeurMotion = xbeeReadString2.substring(30, 31);
-        
-                      Serial.print("Light Lux: ");         
+        foyeurLux = xbeeReadString2.substring(0, 5);
+        hotWaterHot = xbeeReadString2.substring(6, 11);
+        hotWaterCold = xbeeReadString2.substring(12, 17);
+        foyeurHumidity = xbeeReadString2.substring(18, 23);
+        foyeurTemp = xbeeReadString2.substring(24, 29);
+        FoyeurMotion = xbeeReadString2.substring(30, 31);
+
+        foyeurLux.trim();
+        hotWaterHot.trim();
+        hotWaterCold.trim();
+        foyeurHumidity.trim();
+        foyeurTemp.trim();
+
+        Serial.print("Light Lux: ");         
         Serial.println(foyeurLux);
-                Serial.print("Hot Water Hot: ");         
+        Serial.print("Hot Water Hot: ");         
         Serial.println(hotWaterHot);
-                Serial.print("Hot Water Cold: ");         
+        Serial.print("Hot Water Cold: ");         
         Serial.println(hotWaterCold);
-                Serial.print("Foyeur Humidity: ");         
+        Serial.print("Foyeur Humidity: ");         
         Serial.println(foyeurHumidity);
-                Serial.print("Foyeur Temp: ");         
+        Serial.print("Foyeur Temp: ");         
         Serial.println(foyeurTemp);
-                Serial.print("Foyeur Motion: ");         
+        Serial.print("Foyeur Motion: ");         
         Serial.println(FoyeurMotion);
-        
-      xbeeReadString = "";
-      xbeeReadString2 = "";
-           
+
+        xbeeReadString = "";
+        xbeeReadString2 = "";
+
       }
-   
-       if(xbee == 1081730785 && packetSize < 35) {
+
+      if(xbee == 1081730785 && packetSize < 35) {
         Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 32);
         Serial.print("String1=");
@@ -350,11 +363,11 @@ void loop() {
         String FoyeurMotion = xbeeReadString2.substring(0, 1);
         Serial.print("Foyeur Motion: ");         
         Serial.println(FoyeurMotion);
-      xbeeReadString = "";
-      xbeeReadString2 = "";
-    }
-        
- 
+        xbeeReadString = "";
+        xbeeReadString2 = "";
+      }
+
+
       if(xbee == 1081730797 && packetSize > 20) { //powermeter
         Serial.println("=========Power Meter=========");
         Serial.print("Packet Size: ");         
@@ -375,14 +388,14 @@ void loop() {
         Irms4 = xbeeReadString2.substring(54, 59);
         Vrms = xbeeReadString2.substring(60, 66);
 
-realPower1.trim();
-realPower2.trim();
-realPower3.trim();
-realPower4.trim();
-Irms1.trim();
-Irms2.trim();
-Irms3.trim();
-Irms4.trim();
+        realPower1.trim();
+        realPower2.trim();
+        realPower3.trim();
+        realPower4.trim();
+        Irms1.trim();
+        Irms2.trim();
+        Irms3.trim();
+        Irms4.trim();
 
         //Need to write a function for this!
         char floatbuf[10]; // make this at least big enough for the whole string
@@ -401,44 +414,44 @@ Irms4.trim();
 
 
         //EmonCMS
-          Serial.println("Connecting.....");
-         if(client.connect("emoncms.org",80)){
-         client.print("GET /input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
-         //client.print("TotalPower:");
-         client.print(fltPower4);
-         client.print(",Solar:");
-         client.print(fltPower1);  
-         client.print(",PowerP:");
-         client.print(fltPower2);
-         client.print(",HotwaterHeater:");
-         client.print(fltPower3);
-         client.print(",PowerandLights:");
-         client.print(fltPower5);
-         client.print(",TotalCurrent:");
-         client.print(Irms4);
-         client.print(",SolarCurrent:");
-         client.print(Irms1);  
-         client.print(",PowerPCurrent:");
-         client.print(Irms2);
-         client.print(",HydroCurrent:");
-         client.print(Irms3);
-         client.print(",LineVoltage:");
-         client.print(Vrms);
-         client.print("}&apikey=");
-         client.print(apiKey);         //assuming APIKEY is a char or string
-         client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-         client.println("Host: emoncms.org");
-         client.println("User-Agent: Arduino-ethernet");
-         client.println("Connection: close");     //    Although not technically necessary, I found this helpful
-         client.println();
-         Serial.println("****EmonCMS Logged****");
-         client.stop();
-         }
-         else {
-         Serial.println("*************Upload to EmonCMS Failed *************");
-         client.stop();
-         }
-         
+        Serial.println("Connecting.....");
+        if(client.connect("emoncms.org",80)){
+          client.print("GET /input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
+          //client.print("TotalPower:");
+          client.print(fltPower4);
+          client.print(",Solar:");
+          client.print(fltPower1);  
+          client.print(",PowerP:");
+          client.print(fltPower2);
+          client.print(",HotwaterHeater:");
+          client.print(fltPower3);
+          client.print(",PowerandLights:");
+          client.print(fltPower5);
+          client.print(",TotalCurrent:");
+          client.print(Irms4);
+          client.print(",SolarCurrent:");
+          client.print(Irms1);  
+          client.print(",PowerPCurrent:");
+          client.print(Irms2);
+          client.print(",HydroCurrent:");
+          client.print(Irms3);
+          client.print(",LineVoltage:");
+          client.print(Vrms);
+          client.print("}&apikey=");
+          client.print(apiKey);         //assuming APIKEY is a char or string
+          client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+          client.println("Host: emoncms.org");
+          client.println("User-Agent: Arduino-ethernet");
+          client.println("Connection: close");     //    Although not technically necessary, I found this helpful
+          client.println();
+          Serial.println("****EmonCMS Logged****");
+          client.stop();
+        }
+        else {
+          Serial.println("*************Upload to EmonCMS Failed *************");
+          client.stop();
+        }
+
         Serial.print("CT1 Solar:");
         Serial.print(realPower1);
 
@@ -465,8 +478,8 @@ Irms4.trim();
         Serial.println("===========================");
 
         Serial2.flush();
-      xbeeReadString = "";
-      xbeeReadString2 = "";
+        xbeeReadString = "";
+        xbeeReadString2 = "";
 
       }
 
@@ -794,51 +807,15 @@ Irms4.trim();
       client.print(datastreams[15].getFloat());
       client.print(",LaundryTemp:");
       client.print(datastreams[16].getFloat());
-/*
-      client.print(",TotalPower:");
-      client.print(realPower4);
-      client.print(",Solar:");
-      client.print(realPower1);  
-      client.print(",PowerP:");
-      client.print(realPower2);
-      client.print(",HotwaterHeater:");
-      client.print(realPower3);
-      client.print(",PowerandLights:");
-      client.print(realPower5);
-
-
-      client.print(",TotalCurrent:");
-      client.print(Irms4);
-      client.print(",SolarCurrent:");
-      client.print(Irms1);  
-      client.print(",PowerPCurrent:");
-      client.print(Irms2);
-      client.print(",HydroCurrent:");
-      client.print(Irms3);
-      client.print(",LineVoltage:");
-      client.print(Vrms);
-*/
-      /* Moved out of main timer to 10 second one
-       client.print(",TotalPower:");
-       client.print(realPower4);
-       client.print(",Solar:");
-       client.print(realPower1);  
-       client.print(",PowerP:");
-       client.print(realPower2);
-       client.print(",HotwaterHeater:");
-       client.print(realPower3);
-       client.print(",TotalCurrent:");
-       client.print(Irms4);
-       client.print(",SolarCurrent:");
-       client.print(Irms1);  
-       client.print(",PowerPCurrent:");
-       client.print(Irms2);
-       client.print(",HydroCurrent:");
-       client.print(Irms3);
-       client.print(",LineVoltage:");
-       client.print(Vrms);
-       */
-      client.print("}&apikey=");
+      client.print(",FoyeurLux:");
+       client.print(foyeurLux);
+       client.print(",FoyeurHumidity:");
+       client.print(foyeurHumidity);  
+       client.print(",FoyeurTemp:");
+       client.print(foyeurTemp);
+       client.print(",FoyeurMotion:");
+       client.print(FoyeurMotion);
+       client.print("}&apikey=");
       client.print(apiKey);         //assuming APIKEY is a char or string
       client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
       client.println("Host: emoncms.org");
@@ -987,6 +964,9 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
+
+
+
 
 
 
