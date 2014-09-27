@@ -12,6 +12,8 @@
 #include <DHT.h>
 #include <TSL2561.h>
 #include <XBee.h>
+#include <Time.h>
+#include <DS1307RTC.h>
 
 //BMP085 Pressure
 Adafruit_BMP085 bmp;
@@ -185,11 +187,22 @@ void setup() {
   digitalWrite(motionPin, LOW);
   digitalWrite(hydroLED, LOW);
   Serial.println();
+  
+  
+  //RTX Time Sync
+    setSyncProvider(RTC.get);   // the function to get the time from the RTC
+  if(timeStatus()!= timeSet) 
+     Serial.println("Unable to sync with the RTC");
+  else
+     Serial.println("RTC has set the system time");   
+      digitalClockDisplay();   
 }
 
 
-void loop() {
 
+void loop() {
+  setSyncProvider(RTC.get);   // the function to get the time from the RTC
+  
   int commsMotion = digitalRead(motionPin);
   int pirOut = 0;
   if (commsMotion == HIGH) {
@@ -663,7 +676,7 @@ void loop() {
     //  }
   }
 
-  if (timer >= 5000) {
+  if (second() == 59) {
 
     float barometerTemp = (bmp.readTemperature());
     Serial.print("Barometer Temperature = ");
@@ -964,8 +977,26 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
-
-
+void printDigits(int digits){
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
+}
+void digitalClockDisplay(){
+  // digital clock display of the time
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+  Serial.print(" ");
+  Serial.print(day());
+  Serial.print(" ");
+  Serial.print(month());
+  Serial.print(" ");
+  Serial.print(year()); 
+  Serial.println(); 
+}
 
 
 
