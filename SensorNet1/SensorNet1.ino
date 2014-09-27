@@ -90,10 +90,11 @@ EthernetClient client;
 XivelyClient xivelyclient(client);
 
 int sensorPin = 0; //light
-int motionPin = 2; // choose the input pin (for PIR sensor)
-int ledPin = 3; //LED
+const int motionPin = 2; // choose the input pin (for PIR sensor)
+const int ledPin = 3; //LED
+const int foyeurLedPin = 7; //Foyeur Motion ON LED
 int timer = 0;
-int hydroLED = 6; //LED that comes on with hotwater/heatpump
+const int hydroLED = 6; //LED that comes on with hotwater/heatpump
 
 float strWater = 0;
 int waterTimer = 0;
@@ -184,8 +185,11 @@ void setup() {
   pinMode(motionPin, INPUT);     // declare sensor as input
   pinMode(ledPin, OUTPUT);
   pinMode(hydroLED, OUTPUT);
+  pinMode(foyeurLedPin, OUTPUT);
   digitalWrite(motionPin, LOW);
   digitalWrite(hydroLED, LOW);
+  digitalWrite(foyeurLedPin, LOW);
+  
   Serial.println();
   
   
@@ -211,6 +215,10 @@ void loop() {
   }
   datastreams[0].setInt(commsMotion);
 
+ // if (FoyeurMotion == 1) {
+  //  digitalWrite(foyeurLedPin, HIGH);
+ //     }
+ 
   timer ++;
   // Serial.println(timer);
   delay(10);
