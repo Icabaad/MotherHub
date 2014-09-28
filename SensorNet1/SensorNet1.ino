@@ -14,6 +14,9 @@
 #include <XBee.h>
 #include <Time.h>
 #include <DS1307RTC.h>
+#define DS1307_I2C_ADDRESS 0x68  // the I2C address of Tiny RTC
+#define I2C24C32Add  0x50
+#define BMP085_ADDRESS 0x77
 
 //BMP085 Pressure
 Adafruit_BMP085 bmp;
@@ -97,15 +100,13 @@ int timer = 0;
 const int hydroLED = 6; //LED that comes on with hotwater/heatpump
 
 float strWater = 0;
-int waterTimer = 0;
-int waterTimer2 = 0;
 float waterHourly;
 float waterDaily;
 
 char server[] = "http://emoncms.org/";     //emoncms URL
 String apiKey = "ebd4f194e60f6e8694f56aa48b094ddb";
 
-//powerserial1
+//powerserial
 const int fNumber = 3; //number of fields to recieve in data stream
 int fieldIndex =0; //current field being recieved
 int values[fNumber]; //array holding values
@@ -219,9 +220,9 @@ void loop() {
   //  digitalWrite(foyeurLedPin, HIGH);
  //     }
  
-  timer ++;
-  // Serial.println(timer);
-  delay(10);
+  //timer ++;
+
+
   //xbee
   //attempt to read a packet    
   xbee.readPacket();
@@ -301,8 +302,6 @@ void loop() {
 
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
-        waterTimer ++;
-        waterTimer2 ++;
         String water = xbeeReadString.substring(19, 25);
         char floatbuf[8]; // make this at least big enough for the whole string
         water.toCharArray(floatbuf, sizeof(floatbuf));
@@ -325,14 +324,12 @@ void loop() {
         Serial2.flush();
         xbeeReadString = "";
         xbeeReadString2 = "";
-        if(waterTimer2 == 60) { //Need to introduce a RTC to sync times with RL hours etc
+        if(minute() == 59 && second() == 59) { 
           waterHourly = 0;
-          waterTimer2 = 0;
-        }
-        if(waterTimer == 1440) { //resets Daily count after 1440 minutes (24 Hours)
+             }
+        if(hour() == 23 && minute() == 59 && second() == 59) {
           waterDaily = 0;
-          waterTimer = 0;
-        }
+          }
       }
 
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
@@ -418,6 +415,7 @@ void loop() {
         Irms3.trim();
         Irms4.trim();
 
+    /* Replaced with trim function above
         //Need to write a function for this!
         char floatbuf[10]; // make this at least big enough for the whole string
         realPower1.toCharArray(floatbuf, sizeof(floatbuf));
@@ -429,7 +427,7 @@ void loop() {
         realPower4.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower4 = atof(floatbuf);
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
-
+*/
 
 
 
@@ -439,15 +437,15 @@ void loop() {
         if(client.connect("emoncms.org",80)){
           client.print("GET /input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
           //client.print("TotalPower:");
-          client.print(fltPower4);
+          client.print(realPower4);
           client.print(",Solar:");
-          client.print(fltPower1);  
+          client.print(realPower1);  
           client.print(",PowerP:");
-          client.print(fltPower2);
+          client.print(realPower2);
           client.print(",HotwaterHeater:");
-          client.print(fltPower3);
+          client.print(realPower3);
           client.print(",PowerandLights:");
-          client.print(fltPower5);
+          client.print(realPower5);
           client.print(",TotalCurrent:");
           client.print(Irms4);
           client.print(",SolarCurrent:");
@@ -635,7 +633,7 @@ void loop() {
   //*****************************************************
 
 
-  if (timer >= 5000) {
+  if (second() == 58) {
     Serial.println("==========CurrentCost==========");
     Serial1.write("S");
     Serial.println();
@@ -685,6 +683,7 @@ void loop() {
   }
 
   if (second() == 59) {
+          digitalClockDisplay();   
 
     float barometerTemp = (bmp.readTemperature());
     Serial.print("Barometer Temperature = ");
