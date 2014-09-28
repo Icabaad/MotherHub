@@ -417,9 +417,10 @@ void loop() {
         Irms2.trim();
         Irms3.trim();
         Irms4.trim();
+        
 
-    /* Replaced with trim function above
-        //Need to write a function for this!
+
+     //Replaced with trim function above. Stoll needed for realpower5
         char floatbuf[10]; // make this at least big enough for the whole string
         realPower1.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower1 = atof(floatbuf);
@@ -428,11 +429,10 @@ void loop() {
         realPower3.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower3 = atof(floatbuf);
         realPower4.toCharArray(floatbuf, sizeof(floatbuf));
-        float fltPower4 = atof(floatbuf);
+                float fltPower4 = atof(floatbuf);
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
-*/
-
-
+        
+        
 
 
         //EmonCMS
@@ -448,7 +448,7 @@ void loop() {
           client.print(",HotwaterHeater:");
           client.print(realPower3);
           client.print(",PowerandLights:");
-          client.print(realPower5);
+          client.print(fltPower5);
           client.print(",TotalCurrent:");
           client.print(Irms4);
           client.print(",SolarCurrent:");
@@ -484,7 +484,7 @@ void loop() {
         Serial.print("  CT4 Total: ");
         Serial.print(realPower4);
         Serial.print("  PP/Lights: ");
-        Serial.println(realPower5);
+        Serial.println(fltPower5);
 
         Serial.print("CT1 Current:");
         Serial.print(Irms1);
