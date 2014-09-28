@@ -133,6 +133,9 @@ String foyeurTemp = "";
 String FoyeurMotion = "";
 
 int packetSize = xbeeReadString.length(); 
+int currentCostMinute = 0;
+int processMinute = 0;
+
 
 //***************************************************
 void setup() {
@@ -633,7 +636,7 @@ void loop() {
   //*****************************************************
 
 
-  if (second() == 58) {
+  if (currentCostMinute != minute()) {
     Serial.println("==========CurrentCost==========");
     Serial1.write("S");
     Serial.println();
@@ -679,10 +682,11 @@ void loop() {
     fieldIndex = 0; //reset
     Serial.println("===========================");
     Serial1.flush();
-    //  }
+  
+  currentCostMinute = minute();
   }
 
-  if (second() == 59) {
+ if (processMinute != minute()) {
           digitalClockDisplay();   
 
     float barometerTemp = (bmp.readTemperature());
@@ -922,6 +926,7 @@ void loop() {
     commsMotion = 0;
     timer = 0;
     Serial.println();
+    processMinute = minute();
     Serial.println("end");
   }
 }
