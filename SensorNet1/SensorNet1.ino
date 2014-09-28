@@ -193,24 +193,24 @@ void setup() {
   digitalWrite(motionPin, LOW);
   digitalWrite(hydroLED, LOW);
   digitalWrite(foyeurLedPin, LOW);
-  
+
   Serial.println();
-  
-  
+
+
   //RTX Time Sync
-    setSyncProvider(RTC.get);   // the function to get the time from the RTC
+  setSyncProvider(RTC.get);   // the function to get the time from the RTC
   if(timeStatus()!= timeSet) 
-     Serial.println("Unable to sync with the RTC");
+    Serial.println("Unable to sync with the RTC");
   else
-     Serial.println("RTC has set the system time");   
-      digitalClockDisplay();   
+    Serial.println("RTC has set the system time");   
+  digitalClockDisplay();   
 }
 
 
 
 void loop() {
   setSyncProvider(RTC.get);   // the function to get the time from the RTC
-  
+
   int commsMotion = digitalRead(motionPin);
   int pirOut = 0;
   if (commsMotion == HIGH) {
@@ -219,10 +219,10 @@ void loop() {
   }
   datastreams[0].setInt(commsMotion);
 
- // if (FoyeurMotion == 1) {
+  // if (FoyeurMotion == 1) {
   //  digitalWrite(foyeurLedPin, HIGH);
- //     }
- 
+  //     }
+
   //timer ++;
 
 
@@ -329,10 +329,10 @@ void loop() {
         xbeeReadString2 = "";
         if(minute() == 59 && second() == 59) { 
           waterHourly = 0;
-             }
+        }
         if(hour() == 23 && minute() == 59 && second() == 59) {
           waterDaily = 0;
-          }
+        }
       }
 
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
@@ -386,6 +386,13 @@ void loop() {
         Serial.println(FoyeurMotion);
         xbeeReadString = "";
         xbeeReadString2 = "";
+
+        char floatbuf[10]; // make this at least big enough for the whole string
+        FoyeurMotion.toCharArray(floatbuf, sizeof(floatbuf));
+        float motion = atof(floatbuf);
+        if(motion = 1.00) {
+          digitalWrite(foyeurLedPin, HIGH);
+        }
       }
 
 
@@ -417,10 +424,10 @@ void loop() {
         Irms2.trim();
         Irms3.trim();
         Irms4.trim();
-        
 
 
-     //Replaced with trim function above. Stoll needed for realpower5
+
+        //Replaced with trim function above. Stoll needed for realpower5
         char floatbuf[10]; // make this at least big enough for the whole string
         realPower1.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower1 = atof(floatbuf);
@@ -429,10 +436,10 @@ void loop() {
         realPower3.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower3 = atof(floatbuf);
         realPower4.toCharArray(floatbuf, sizeof(floatbuf));
-                float fltPower4 = atof(floatbuf);
+        float fltPower4 = atof(floatbuf);
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
-        
-        
+
+
 
 
         //EmonCMS
@@ -682,12 +689,12 @@ void loop() {
     fieldIndex = 0; //reset
     Serial.println("===========================");
     Serial1.flush();
-  
-  currentCostMinute = minute();
+
+    currentCostMinute = minute();
   }
 
- if (processMinute != minute()) {
-          digitalClockDisplay();   
+  if (processMinute != minute()) {
+    digitalClockDisplay();   
 
     float barometerTemp = (bmp.readTemperature());
     Serial.print("Barometer Temperature = ");
@@ -832,14 +839,14 @@ void loop() {
       client.print(",LaundryTemp:");
       client.print(datastreams[16].getFloat());
       client.print(",FoyeurLux:");
-       client.print(foyeurLux);
-       client.print(",FoyeurHumidity:");
-       client.print(foyeurHumidity);  
-       client.print(",FoyeurTemp:");
-       client.print(foyeurTemp);
-       client.print(",FoyeurMotion:");
-       client.print(FoyeurMotion);
-       client.print("}&apikey=");
+      client.print(foyeurLux);
+      client.print(",FoyeurHumidity:");
+      client.print(foyeurHumidity);  
+      client.print(",FoyeurTemp:");
+      client.print(foyeurTemp);
+      client.print(",FoyeurMotion:");
+      client.print(FoyeurMotion);
+      client.print("}&apikey=");
       client.print(apiKey);         //assuming APIKEY is a char or string
       client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
       client.println("Host: emoncms.org");
@@ -923,6 +930,7 @@ void loop() {
 
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
+      digitalWrite(foyeurLedPin, LOW);
     commsMotion = 0;
     timer = 0;
     Serial.println();
@@ -1009,6 +1017,7 @@ void digitalClockDisplay(){
   Serial.print(year()); 
   Serial.println(); 
 }
+
 
 
 
