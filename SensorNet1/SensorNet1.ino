@@ -219,11 +219,12 @@ void loop() {
   }
   datastreams[0].setInt(commsMotion);
 
-  // if (FoyeurMotion == 1) {
-  //  digitalWrite(foyeurLedPin, HIGH);
-  //     }
-
-  //timer ++;
+        if(minute() == 59 && second() == 59) { //Watertimer resets
+          waterHourly = 0;
+        }
+        if(hour() == 23 && minute() == 59 && second() == 59) {
+          waterDaily = 0;
+        }
 
 
   //xbee
@@ -327,12 +328,7 @@ void loop() {
         Serial2.flush();
         xbeeReadString = "";
         xbeeReadString2 = "";
-        if(minute() == 59 && second() == 59) { 
-          waterHourly = 0;
-        }
-        if(hour() == 23 && minute() == 59 && second() == 59) {
-          waterDaily = 0;
-        }
+
       }
 
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
