@@ -261,7 +261,7 @@ void loop() {
       // The option byte is a bit field
       if (rx.getOption() & ZB_PACKET_ACKNOWLEDGED)
         // the sender got an ACK
-        Serial.println("packet acknowledged");
+        Serial.println(" Packet Acknowledged");
       if (rx.getOption() & ZB_BROADCAST_PACKET)
         // This was a broadcast packet
         Serial.println("broadcast Packet");
@@ -280,11 +280,12 @@ void loop() {
       Serial.println(rx.getDataLength(),DEC);
 
       // this is the actual data you sent
-      Serial.println("Received Data: ");
-      for (int i = 0; i < rx.getDataLength(); i++) {
-        print8Bits(rx.getData()[i]);
-        Serial.print(" ");
-      }
+     // Serial.println("Received Data: ");
+      //for (int i = 0; i < rx.getDataLength(); i++) {
+      //  print8Bits(rx.getData()[i]);
+      //  Serial.print(" ");
+      //}
+      
       /*   // and an ascii representation for those of us
        // that send text through the XBee
        Serial.println();
@@ -333,18 +334,18 @@ void loop() {
 
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
         Serial.println("=========Foyeur=========");
-        String xbeeReadString2 = xbeeReadString.substring(17, 48);
+        String xbeeReadString2 = xbeeReadString.substring(17, 49);
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
         Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
 
-        foyeurLux = xbeeReadString2.substring(0, 5);
-        hotWaterHot = xbeeReadString2.substring(6, 11);
-        hotWaterCold = xbeeReadString2.substring(12, 17);
-        foyeurHumidity = xbeeReadString2.substring(18, 23);
-        foyeurTemp = xbeeReadString2.substring(24, 29);
-        FoyeurMotion = xbeeReadString2.substring(30, 31);
+        foyeurLux = xbeeReadString2.substring(0, 6);
+        hotWaterHot = xbeeReadString2.substring(7, 12);
+        hotWaterCold = xbeeReadString2.substring(13, 18);
+        foyeurHumidity = xbeeReadString2.substring(19, 24);
+        foyeurTemp = xbeeReadString2.substring(25, 30);
+        FoyeurMotion = xbeeReadString2.substring(31, 32);
 
         foyeurLux.trim();
         hotWaterHot.trim();
