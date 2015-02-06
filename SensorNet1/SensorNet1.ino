@@ -204,9 +204,11 @@ void setup() {
   else
     Serial.println("RTC has set the system time");   
   digitalClockDisplay();   
+  
+      Serial.println("Starting Loop.....");
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
   setSyncProvider(RTC.get);   // the function to get the time from the RTC
@@ -471,7 +473,7 @@ void loop() {
           client.println("Connection: close");     //    Although not technically necessary, I found this helpful
           client.println();
           Serial.println("****EmonCMS Logged****");
-          client.stop();
+          //client.stop();
         }
         else {
           Serial.println("*************Upload to EmonCMS Failed *************");
@@ -634,7 +636,7 @@ void loop() {
 
 
 
-
+/* Currentcost removed. Replaced by power Ardy
   //*****************************************************
   //         Power receipt
   //*****************************************************
@@ -690,6 +692,7 @@ void loop() {
     currentCostMinute = minute();
   }
 
+*/
   if (processMinute != minute()) {
     digitalClockDisplay();   
 
@@ -797,7 +800,7 @@ void loop() {
 
 
     //EmonCMS
-    if(client.connect("80.243.190.58",80)){
+    if(client.connect("emoncms.org",80)){
       Serial.println("Connecting.....");
       Serial.println("==========EMONCMS==========");
       client.print("GET /input/post.json?json={CommsMotion:");  // make sure there is a [space] between GET and /input
@@ -850,7 +853,7 @@ void loop() {
       client.println("User-Agent: Arduino-ethernet");
       client.println("Connection: close");     //    Although not technically necessary, I found this helpful
       client.println();
-      client.stop();
+      //client.stop();
 
       Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
       Serial.print("CommsMotion:");
@@ -934,6 +937,7 @@ void loop() {
     processMinute = minute();
     Serial.println("end");
   }
+ 
 }
 
 void handleXbeeRxMessage(uint8_t *data, uint8_t length){
