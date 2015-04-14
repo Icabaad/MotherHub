@@ -473,11 +473,52 @@ void loop() {
           client.println("Connection: close");     //    Although not technically necessary, I found this helpful
           client.println();
           Serial.println("****EmonCMS Logged****");
-          //client.stop();
+          client.stop();
+          client.flush();
         }
         else {
           Serial.println("*************Upload to EmonCMS Failed *************");
           client.stop();
+        }
+        
+         //EmonCMS
+        Serial.println("Connecting.....");
+        if(client.connect("dangerproxy",80)){
+          client.print("GET emoncms/input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
+          //client.print("TotalPower:");
+          client.print(realPower4);
+          client.print(",Solar:");
+          client.print(realPower1);  
+          client.print(",PowerP:");
+          client.print(realPower2);
+          client.print(",HotwaterHeater:");
+          client.print(realPower3);
+          client.print(",PowerandLights:");
+          client.print(fltPower5);
+          client.print(",TotalCurrent:");
+          client.print(Irms4);
+          client.print(",SolarCurrent:");
+          client.print(Irms1);  
+          client.print(",PowerPCurrent:");
+          client.print(Irms2);
+          client.print(",HydroCurrent:");
+          client.print(Irms3);
+          client.print(",LineVoltage:");
+          client.print(Vrms);
+          client.print("}&apikey=");
+          client.print("da3ae5f01b1245c3360ef85ddd8fb451");         //assuming APIKEY is a char or string
+          client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
+          client.println("Host: dangerproxy");
+          client.println("User-Agent: Arduino-ethernet");
+          client.println("Connection: close");     //    Although not technically necessary, I found this helpful
+          client.println();
+          Serial.println("****EmonCMS HOME Logged****");
+          //client.stop();
+        }
+        else {
+          Serial.println("*************Upload to EmonCMS HOME Failed *************");
+          client.stop();
+          client.flush();
         }
 
         Serial.print("CT1 Solar:");
