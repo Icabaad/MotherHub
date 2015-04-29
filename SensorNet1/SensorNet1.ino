@@ -119,6 +119,7 @@ String realPower2 = "";
 String realPower3 = "";
 String realPower4 = "";
 float realPower5 = 0;
+float fltPower5 = 0;
 String Irms1 = "";
 String Irms2 = "";
 String Irms3 = "";
@@ -474,17 +475,17 @@ void loop() {
           client.println();
           Serial.println("****EmonCMS Logged****");
           client.stop();
-          client.flush();
+      //    client.flush();
         }
         else {
           Serial.println("*************Upload to EmonCMS Failed *************");
           client.stop();
         }
-        
+      /*  
          //EmonCMS
         Serial.println("Connecting.....");
-        if(client.connect("dangerproxy",80)){
-          client.print("GET emoncms/input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
+        if(client.connect("192.168.0.2",80)){
+          client.print("GET emoncms/input/post.json?node=1&json={TotalPower:");  // make sure there is a [space] between GET and /input
           //client.print("TotalPower:");
           client.print(realPower4);
           client.print(",Solar:");
@@ -513,14 +514,14 @@ void loop() {
           client.println("Connection: close");     //    Although not technically necessary, I found this helpful
           client.println();
           Serial.println("****EmonCMS HOME Logged****");
-          //client.stop();
+          client.stop();
         }
         else {
           Serial.println("*************Upload to EmonCMS HOME Failed *************");
           client.stop();
           client.flush();
         }
-
+*/
         Serial.print("CT1 Solar:");
         Serial.print(realPower1);
 
@@ -768,17 +769,54 @@ void loop() {
     full = lum & 0xFFFF;
     Serial.println(full);
     datastreams[4].setInt(full);
-
+    
+/* Leftovers? remarked out 29/04/2015
     Serial.print("lightsandpowah: "); 
     Serial.println(values[2]);
     Serial.print("hydro: ");   
     Serial.println(values[1]);
     Serial.print("totalpower: "); 
     Serial.println(values[0]);
-
+*/
     //SQL feed
     Serial.println("SQL:");
     //Serial 3 to Pi
+    //converting to json 29/04/2015
+    Serial3.print("{CommsMotion:");Serial3.print(datastreams[0].getInt());Serial3.print("},");
+    Serial3.print("{CommsTemp:");Serial3.print(datastreams[1].getFloat());Serial3.print("},");
+    Serial3.print("{CommsBarometer:");Serial3.print(datastreams[2].getFloat());Serial3.print("},");
+    Serial3.print("{CommsHumidity:");Serial3.print(datastreams[3].getFloat());Serial3.print("},");
+    Serial3.print("{CommsLux:");Serial3.print(datastreams[4].getInt());Serial3.print("},");
+    Serial3.print("{OutdoorTemp:");Serial3.print(datastreams[5].getFloat());Serial3.print("},");
+    Serial3.print("{OutdoorV:");Serial3.print(datastreams[6].getFloat());Serial3.print("},");
+    Serial3.print("{OutdoorBatteryV:");Serial3.print(datastreams[7].getFloat());Serial3.print("},");
+    Serial3.print("{OutsideSolarV:");Serial3.print(datastreams[8].getFloat());Serial3.print("},");
+    //Serial3.print("{CommsMotion:");Serial3.print(datastreams[9].getInt());Serial3.print("},");
+    //Serial3.print("{CommsMotion:");Serial3.print(datastreams[10].getInt());Serial3.print("},");
+    //Serial3.print("{CommsMotion:");Serial3.print(datastreams[11].getInt());Serial3.print("},");
+    Serial3.print("{WatterUsage:");Serial3.print(datastreams[12].getFloat());Serial3.print("},");
+    Serial3.print("{WaterusageHourly:");Serial3.print(datastreams[13].getFloat());Serial3.print("},");
+    Serial3.print("{WaterusageDaily:");Serial3.print(datastreams[14].getFloat());Serial3.print("},");
+    Serial3.print("{Bedroom1Temp:");Serial3.print(datastreams[15].getFloat());Serial3.print("},");
+    Serial3.print("{LaundryTemp:");Serial3.print(datastreams[16].getFloat());Serial3.print("},");
+    Serial3.print("{FoyeurLux:");Serial3.print(foyeurLux);Serial3.print("},");
+    Serial3.print("{HotwaterHotOutTemp:");Serial3.print(hotWaterHot);Serial3.print("},");
+    Serial3.print("{HotwaterColdInTemp:");Serial3.print(hotWaterCold);Serial3.print("},");
+    Serial3.print("{FoyeurHumidity:");Serial3.print(foyeurHumidity);Serial3.print("},");
+    Serial3.print("{FoyeurTemp:");Serial3.print(foyeurTemp);Serial3.print("},");
+    Serial3.print("{FoyeurMotion:");Serial3.print(FoyeurMotion);Serial3.print("},");
+    Serial3.print("{TotalPowerWatts:");Serial3.print(realPower4);Serial3.print("},");
+    Serial3.print("{SolarWatts:");Serial3.print(realPower1);Serial3.print("},");    
+    Serial3.print("{SpareWatts:");Serial3.print(realPower2);Serial3.print("},");    
+    Serial3.print("{HotWater&Heater:");Serial3.print(realPower3);Serial3.print("},");    
+    Serial3.print("{Powerpoints&Lights:");Serial3.print(fltPower5);Serial3.print("},");    
+    Serial3.print("{TotalCurrent:");Serial3.print(Irms4);Serial3.print("},");    
+    Serial3.print("{SolarCurrent:");Serial3.print(Irms1);Serial3.print("},");    
+    Serial3.print("{SpareCurrent:");Serial3.print(Irms2);Serial3.print("},");    
+    Serial3.print("{hotwater&Heater:");Serial3.print(Irms3);Serial3.print("},");
+    Serial3.print("{LineVoltage:");Serial3.print(Vrms);Serial3.println("},");    
+                
+    /*
     Serial3.print(datastreams[0].getInt());
     Serial3.print(",");
     Serial3.print(datastreams[1].getFloat());
@@ -803,35 +841,43 @@ void loop() {
     Serial3.print(",");
     Serial3.print(datastreams[11].getInt());
     // Serial3.print(",");
-
+*/
     //debug console   
-    Serial.print(datastreams[0].getInt());
-    Serial.print(",");
-    Serial.print(datastreams[1].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[2].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[3].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[4].getInt());
-    Serial.print(",");
-    Serial.print(datastreams[5].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[6].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[7].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[8].getFloat());
-    Serial.print(",");
-    Serial.print(datastreams[9].getInt());
-    Serial.print(",");
-    Serial.print(datastreams[10].getInt());
-    Serial.print(",");
-    Serial.print(datastreams[11].getInt());
-    Serial.print(",");
-    Serial.print(datastreams[12].getFloat());
-    Serial.println();
-    Serial.println("SQL Injected!");
+    Serial.print("{CommsMotion:");Serial.print(datastreams[0].getInt());Serial.print("},");
+    Serial.print("{CommsTemp:");Serial.print(datastreams[1].getFloat());Serial.print("},");
+    Serial.print("{CommsBarometer:");Serial.print(datastreams[2].getFloat());Serial.print("},");
+    Serial.print("{CommsHumidity:");Serial.print(datastreams[3].getFloat());Serial.print("},");
+    Serial.print("{CommsLux:");Serial.print(datastreams[4].getInt());Serial.print("},");
+    Serial.print("{OutdoorTemp:");Serial.print(datastreams[5].getFloat());Serial.print("},");
+    Serial.print("{OutdoorV:");Serial.print(datastreams[6].getFloat());Serial.print("},");
+    Serial.print("{OutdoorBatteryV:");Serial.print(datastreams[7].getFloat());Serial.print("},");
+    Serial.print("{OutsideSolarV:");Serial.print(datastreams[8].getFloat());Serial.print("},");
+    //Serial.print("{CommsMotion:");Serial.print(datastreams[9].getInt());Serial.print("},");
+    //Serial.print("{CommsMotion:");Serial.print(datastreams[10].getInt());Serial.print("},");
+    //Serial.print("{CommsMotion:");Serial.print(datastreams[11].getInt());Serial.print("},");
+    Serial.print("{WatterUsage:");Serial.print(datastreams[12].getFloat());Serial.print("},");
+    Serial.print("{WaterusageHourly:");Serial.print(datastreams[13].getFloat());Serial.print("},");
+    Serial.print("{WaterusageDaily:");Serial.print(datastreams[14].getFloat());Serial.print("},");
+    Serial.print("{Bedroom1Temp:");Serial.print(datastreams[15].getFloat());Serial.print("},");
+    Serial.print("{LaundryTemp:");Serial.print(datastreams[16].getFloat());Serial.print("},");
+    Serial.print("{FoyeurLux:");Serial.print(foyeurLux);Serial.print("},");
+    Serial.print("{HotwaterHotOutTemp:");Serial.print(hotWaterHot);Serial.print("},");
+    Serial.print("{HotwaterColdInTemp:");Serial.print(hotWaterCold);Serial.print("},");
+    Serial.print("{FoyeurHumidity:");Serial.print(foyeurHumidity);Serial.print("},");
+    Serial.print("{FoyeurTemp:");Serial.print(foyeurTemp);Serial.print("},");
+    Serial.print("{FoyeurMotion:");Serial.print(FoyeurMotion);Serial.print("},");
+    Serial.print("{TotalPowerWatts:");Serial.print(realPower4);Serial.print("},");
+    Serial.print("{SolarWatts:");Serial.print(realPower1);Serial.print("},");    
+    Serial.print("{SpareWatts:");Serial.print(realPower2);Serial.print("},");    
+    Serial.print("{HotWater&Heater:");Serial.print(realPower3);Serial.print("},");    
+    Serial.print("{Powerpoints&Lights:");Serial.print(fltPower5);Serial.print("},");    
+    Serial.print("{TotalCurrent:");Serial.print(Irms4);Serial.print("},");    
+    Serial.print("{SolarCurrent:");Serial.print(Irms1);Serial.print("},");    
+    Serial.print("{SpareCurrent:");Serial.print(Irms2);Serial.print("},");    
+    Serial.print("{hotwater&Heater:");Serial.print(Irms3);Serial.print("},");
+    Serial.print("{LineVoltage:");Serial.print(Vrms);Serial.println("},");  
+
+    Serial.println("********SQL Injected!*********");
     Serial.println();
 
     Serial.println("Uploading it to Xively");
@@ -931,7 +977,6 @@ void loop() {
       Serial.print(datastreams[15].getFloat());
       Serial.print(",LaundryTemp:");
       Serial.print(datastreams[16].getFloat());
-
       Serial.print(",TotalPower:");
       Serial.print(realPower4);
       Serial.print(",Solar:");
