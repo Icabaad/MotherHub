@@ -441,7 +441,7 @@ void loop() {
 
 
 
-
+/*
         //EmonCMS
         Serial.println("Connecting.....");
         if(client.connect("emoncms.org",80)){
@@ -481,12 +481,13 @@ void loop() {
           Serial.println("*************Upload to EmonCMS Failed *************");
           client.stop();
         }
+        */
     Serial.println("************Power stats sent to python***********");    
     Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
     Serial3.print("SolarWatts:");Serial3.print(realPower1);Serial3.print(",");    
     Serial3.print("SpareWatts:");Serial3.print(realPower2);Serial3.print(",");    
     Serial3.print("HotWaterHeaterWatts:");Serial3.print(realPower3);Serial3.print(",");    
-    Serial3.print("Powerpoints&Lights:");Serial3.print(fltPower5);Serial3.print(",");    
+    Serial3.print("PowerpointsLights:");Serial3.print(fltPower5);Serial3.print(",");    
     Serial3.print("TotalCurrent:");Serial3.print(Irms4);Serial3.print(",");    
     Serial3.print("SolarCurrent:");Serial3.print(Irms1);Serial3.print(",");    
     Serial3.print("SpareCurrent:");Serial3.print(Irms2);Serial3.print(",");    
@@ -517,6 +518,13 @@ void loop() {
         Serial.print("Line Voltage:");
         Serial.println(Vrms);
         Serial.println("===========================");
+        
+        if(fltPower3 > 40) {
+          digitalWrite(hydroLED, HIGH);
+        }
+        else{
+          digitalWrite(hydroLED, LOW);
+        }
 
         Serial2.flush();
         xbeeReadString = "";
@@ -776,17 +784,17 @@ void loop() {
     Serial3.print("FoyeurHumidity:");Serial3.print(foyeurHumidity);Serial3.print(",");
     Serial3.print("FoyeurTemp:");Serial3.print(foyeurTemp);Serial3.print(",");
     Serial3.print("FoyeurMotion:");Serial3.print(FoyeurMotion);Serial3.print(",");
-    Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
+   /* Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
     Serial3.print("SolarWatts:");Serial3.print(realPower1);Serial3.print(",");    
     Serial3.print("SpareWatts:");Serial3.print(realPower2);Serial3.print(",");    
     Serial3.print("HotWaterHeaterWatts:");Serial3.print(realPower3);Serial3.print(",");    
-    Serial3.print("Powerpoints&Lights:");Serial3.print(fltPower5);Serial3.print(",");    
+    Serial3.print("PowerpointsLights:");Serial3.print(fltPower5);Serial3.print(",");    
     Serial3.print("TotalCurrent:");Serial3.print(Irms4);Serial3.print(",");    
     Serial3.print("SolarCurrent:");Serial3.print(Irms1);Serial3.print(",");    
     Serial3.print("SpareCurrent:");Serial3.print(Irms2);Serial3.print(",");    
     Serial3.print("hotwaterHeaterCurrent:");Serial3.print(Irms3);Serial3.print(",");
     Serial3.print("LineVoltage:");Serial3.println(Vrms);    
-                
+     */           
     /*
     Serial3.print(datastreams[0].getInt());
     Serial3.print(",");
@@ -856,7 +864,7 @@ void loop() {
     Serial.print("xivelyclient.put returned ");
     Serial.println(ret);
 
-
+/*
     //EmonCMS
     if(client.connect("emoncms.org",80)){
       Serial.println("Connecting.....");
@@ -984,7 +992,7 @@ void loop() {
       Serial.println("Upload to EmonCMS Failed *************");
       client.stop();
     }
-
+*/
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
       digitalWrite(foyeurLedPin, LOW);
