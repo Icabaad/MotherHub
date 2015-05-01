@@ -126,11 +126,16 @@ String Irms3 = "";
 String Irms4 = "";
 String Vrms = "";
 float KWHour = 0;
+float KWHour2 = 0;
 float KWDay = 0;
 float lastKWHour= 0;
+float lastKWHour2= 0;
 float lastKWDay = 0;
-float wattTotal = 0;
+float minuteWattTotal = 0;
+float hourWattTotal = 0;
 float KWHourTotal =0;
+int kwStart = 0;
+int firstStart =0;
 String foyeurLux = 0;
 String hotWaterHot = 0;
 String hotWaterCold = 0;
@@ -145,6 +150,7 @@ int processHour = 0;
 int processDay = 0;
 
 int debug = 0;
+
 //***************************************************
 void setup() {
   Serial.begin(19200);  //Debug
@@ -184,6 +190,10 @@ void setup() {
     Serial.println("Could not find a valid BMP085 sensor, check wiring!");
     while (1) {
     }
+int processMinute = minute();
+int processHour = hour();
+int processDay = day();
+
   }
   //Lux  
   //tsl.setGain(TSL2561_GAIN_0X);         // set no gain (for bright situtations)
@@ -250,8 +260,10 @@ void loop() {
       // this is how you get the 64 bit address out of
       // the incoming packet so you know which device
       // it came from
-      Serial.print("Got an rx packet from: ");
       XBeeAddress64 senderLongAddress = rx.getRemoteAddress64();
+      Serial.print("Got an rx packet from: ");
+      
+      if (debug == 1) {
       print32Bits(senderLongAddress.getMsb());
       Serial.print(" ");
       print32Bits(senderLongAddress.getLsb());
@@ -262,6 +274,8 @@ void loop() {
       print16Bits(senderShortAddress);
       Serial.println(")");
       Serial.print(senderLongAddress.getLsb());
+      }
+        
       uint32_t xbee = (senderLongAddress.getLsb());  
       // The option byte is a bit field
       if (rx.getOption() & ZB_PACKET_ACKNOWLEDGED)
@@ -270,6 +284,7 @@ void loop() {
       if (rx.getOption() & ZB_BROADCAST_PACKET)
         // This was a broadcast packet
         Serial.println("broadcast Packet");
+      
       if(debug==1){
       Serial.print("checksum is ");
       Serial.print(rx.getChecksum(), HEX);
@@ -306,8 +321,8 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
-      packetSize = xbeeReadString.length(); 
       }
+      packetSize = xbeeReadString.length(); 
       
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
@@ -339,7 +354,7 @@ void loop() {
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
         Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 49);
-        if(debug = 1) {
+        if(debug == 1) {
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
@@ -379,7 +394,7 @@ void loop() {
       if(xbee == 1081730785 && packetSize < 35) {
         Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 32);
-                if(debug = 1) {
+                if(debug == 1) {
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
@@ -403,7 +418,7 @@ void loop() {
       if(xbee == 1081730797 && packetSize > 20) { //powermeter
         Serial.println("=========Power Meter=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 83);
-        if(debug = 1) {
+        if(debug == 1) {
           Serial.print("Packet Size: ");         
           Serial.println(packetSize,DEC);
           Serial.print("String1=");
@@ -431,8 +446,6 @@ void loop() {
         Irms3.trim();
         Irms4.trim();
 
-
-
         //Replaced with trim function above. Stoll needed for realpower5
         char floatbuf[10]; // make this at least big enough for the whole string
         realPower1.toCharArray(floatbuf, sizeof(floatbuf));
@@ -445,52 +458,15 @@ void loop() {
         float fltPower4 = atof(floatbuf);
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
 
-wattTotal += fltPower4;
-Serial.print("Watt Total:");Serial.print(wattTotal);
+minuteWattTotal += fltPower4;
+Serial.println();
+Serial.print("Watt Total:");Serial.print(minuteWattTotal);
 Serial.print("---KW/H:");Serial.print(KWHour/1000);
+Serial.print("---KW/H2:");Serial.print(KWHour2/1000);
 Serial.print("---Last KW/H:");Serial.print(lastKWHour/1000);
+Serial.print("---Last KW/H:");Serial.print(lastKWHour2/1000);
 Serial.print("---KW/D:");Serial.println(KWDay/1000);
-/*
-        //EmonCMS
-        Serial.println("Connecting.....");
-        if(client.connect("emoncms.org",80)){
-          client.print("GET /input/post.json?json={TotalPower:");  // make sure there is a [space] between GET and /input
-          //client.print("TotalPower:");
-          client.print(realPower4);
-          client.print(",Solar:");
-          client.print(realPower1);  
-          client.print(",PowerP:");
-          client.print(realPower2);
-          client.print(",HotwaterHeater:");
-          client.print(realPower3);
-          client.print(",PowerandLights:");
-          client.print(fltPower5);
-          client.print(",TotalCurrent:");
-          client.print(Irms4);
-          client.print(",SolarCurrent:");
-          client.print(Irms1);  
-          client.print(",PowerPCurrent:");
-          client.print(Irms2);
-          client.print(",HydroCurrent:");
-          client.print(Irms3);
-          client.print(",LineVoltage:");
-          client.print(Vrms);
-          client.print("}&apikey=");
-          client.print(apiKey);         //assuming APIKEY is a char or string
-          client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-          client.println("Host: emoncms.org");
-          client.println("User-Agent: Arduino-ethernet");
-          client.println("Connection: close");     //    Although not technically necessary, I found this helpful
-          client.println();
-          Serial.println("****EmonCMS Logged****");
-          client.stop();
-      //    client.flush();
-        }
-        else {
-          Serial.println("*************Upload to EmonCMS Failed *************");
-          client.stop();
-        }
-        */
+
     Serial.println("************Power stats sent to python***********");    
     Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
     Serial3.print("SolarWatts:");Serial3.print(realPower1);Serial3.print(",");    
@@ -549,14 +525,14 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
 
       if (ioSample.containsAnalog()) {
         // Serial.println("Sample contains analog data");
-        Serial.println("Received I/O Sample from: ");
+        Serial.print("Received I/O Sample from: ");
         Serial.println(senderLongAddress.getLsb());
         // this is how you get the 64 bit address out of
         // the incoming packet so you know which device
         // it came from
         uint8_t bitmask = ioSample.getAnalogMask();
 
-       if(debug=1) {
+       if(debug == 1) {
         for (uint8_t x = 0; x < 8; x++){
           if ((bitmask & (1 << x)) != 0){
             Serial.print("position ");
@@ -726,10 +702,30 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
 */
   if (processMinute != minute()) {
     digitalClockDisplay();   
-    KWHourTotal +=(wattTotal / 6);
-    KWHour = KWHourTotal /(minute()+1);
-    wattTotal = 0;
-
+    if (firstStart == 0) {
+      kwStart = minute();
+      hourWattTotal += minuteWattTotal;
+      KWHourTotal +=(minuteWattTotal / 6);
+      KWHour = KWHourTotal / ((minute()+1) -kwStart);
+      KWHour2 = hourWattTotal / ((minute()+1) -kwStart * 6);
+      minuteWattTotal = 0;
+      firstStart = 1;
+    }
+    else if(firstStart == 1) {
+      hourWattTotal += minuteWattTotal;
+      KWHourTotal +=(minuteWattTotal / 6);
+      KWHour = KWHourTotal / ((minute()+1) -kwStart);
+      KWHour2 = hourWattTotal / ((minute()+1) -kwStart * 6);
+      minuteWattTotal = 0;
+    } 
+    else if(firstStart == 2) {
+      hourWattTotal += minuteWattTotal;
+      KWHourTotal +=(minuteWattTotal / 6);
+      KWHour = KWHourTotal / (minute()+1);
+      KWHour2 = hourWattTotal / ((minute()+1) * 6);
+      minuteWattTotal = 0;
+}
+  
     float barometerTemp = (bmp.readTemperature());
     Serial.print("Barometer Temperature = ");
     Serial.print(barometerTemp);
@@ -797,46 +793,8 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial3.print("FoyeurHumidity:");Serial3.print(foyeurHumidity);Serial3.print(",");
     Serial3.print("FoyeurTemp:");Serial3.print(foyeurTemp);Serial3.print(",");
     Serial3.print("FoyeurMotion:");Serial3.print(FoyeurMotion);
-   /* 
-    Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
-    Serial3.print("SolarWatts:");Serial3.print(realPower1);Serial3.print(",");    
-    Serial3.print("SpareWatts:");Serial3.print(realPower2);Serial3.print(",");    
-    Serial3.print("HotWaterHeaterWatts:");Serial3.print(realPower3);Serial3.print(",");    
-    Serial3.print("PowerpointsLights:");Serial3.print(fltPower5);Serial3.print(",");    
-    Serial3.print("TotalCurrent:");Serial3.print(Irms4);Serial3.print(",");    
-    Serial3.print("SolarCurrent:");Serial3.print(Irms1);Serial3.print(",");    
-    Serial3.print("SpareCurrent:");Serial3.print(Irms2);Serial3.print(",");    
-    Serial3.print("hotwaterHeaterCurrent:");Serial3.print(Irms3);Serial3.print(",");
-    Serial3.print("LineVoltage:");Serial3.println(Vrms);    
-     */           
-    /*
-    Serial3.print(datastreams[0].getInt());
-    Serial3.print(",");
-    Serial3.print(datastreams[1].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[2].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[3].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[4].getInt());
-    Serial3.print(",");
-    Serial3.print(datastreams[5].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[6].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[7].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[8].getFloat());
-    Serial3.print(",");
-    Serial3.print(datastreams[9].getInt());
-    Serial3.print(",");
-    Serial3.print(datastreams[10].getInt());
-    Serial3.print(",");
-    Serial3.print(datastreams[11].getInt());
-    // Serial3.print(",");
-*/
+  
     //debug console   
-    
     if(debug=1) {
     Serial.print("CommsMotion:");Serial.print(datastreams[0].getInt());Serial.print(",");
     Serial.print("CommsTemp:");Serial.print(datastreams[1].getFloat());Serial.print(",");
@@ -880,135 +838,7 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial.print("xivelyclient.put returned ");
     Serial.println(ret);
 
-/*
-    //EmonCMS
-    if(client.connect("emoncms.org",80)){
-      Serial.println("Connecting.....");
-      Serial.println("==========EMONCMS==========");
-      client.print("GET /input/post.json?json={CommsMotion:");  // make sure there is a [space] between GET and /input
-      //   client.print("CommsMotion:");
-      client.print(datastreams[0].getInt());
-      client.print(",CommsTemp:");
-      client.print(datastreams[1].getFloat());
-      client.print(",CommsBarometer:");
-      client.print(datastreams[2].getFloat());  
-      client.print(",CommsHumidity:");
-      client.print(datastreams[3].getFloat());
-      client.print(",CommsLux:");
-      client.print(datastreams[4].getInt());
-      client.print(",TempOutside:");
-      client.print(datastreams[5].getFloat());
-      client.print(",Xbee1InternalV:");
-      client.print(datastreams[6].getFloat());  
-      client.print(",Xbee1BatteryV:");
-      client.print(datastreams[7].getFloat());
-      client.print(",Xbee1SolarV:");
-      client.print(datastreams[8].getFloat());
-      client.print(",HousePowerUse:");
-      client.print(datastreams[9].getInt());  
-      client.print(",HeaterHotwaterUse:");
-      client.print(datastreams[10].getInt());
-      client.print(",LightsPowerUse:");
-      client.print(datastreams[11].getInt());
-      client.print(",WaterusageMinute:");
-      client.print(datastreams[12].getFloat());
-      client.print(",WaterusageHourly:");
-      client.print(datastreams[13].getFloat());  
-      client.print(",WaterusageDaily:");
-      client.print(datastreams[14].getFloat());
-      client.print(",Bedroom1Temp:");
-      client.print(datastreams[15].getFloat());
-      client.print(",LaundryTemp:");
-      client.print(datastreams[16].getFloat());
-      client.print(",FoyeurLux:");
-      client.print(foyeurLux);
-      client.print(",FoyeurHumidity:");
-      client.print(foyeurHumidity);  
-      client.print(",FoyeurTemp:");
-      client.print(foyeurTemp);
-      client.print(",FoyeurMotion:");
-      client.print(FoyeurMotion);
-      client.print("}&apikey=");
-      client.print(apiKey);         //assuming APIKEY is a char or string
-      client.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-      client.println("Host: emoncms.org");
-      client.println("User-Agent: Arduino-ethernet");
-      client.println("Connection: close");     //    Although not technically necessary, I found this helpful
-      client.println();
-      //client.stop();
 
-      Serial.print("GET /input/post.json?json={");  // make sure there is a [space] between GET and /input
-      Serial.print("CommsMotion:");
-      Serial.print(datastreams[0].getInt());
-      Serial.print(",CommsTemp:");
-      Serial.print(datastreams[1].getFloat());
-      Serial.print(",CommsBarometer:");
-      Serial.print(datastreams[2].getFloat());  
-      Serial.print(",CommsHumidity:");
-      Serial.print(datastreams[3].getFloat());
-      Serial.print(",CommsLux:");
-      Serial.print(datastreams[4].getInt());
-      Serial.print(",TempOutside:");
-      Serial.print(datastreams[5].getFloat());
-      Serial.print(",Xbee1InternalV:");
-      Serial.print(datastreams[6].getFloat());  
-      Serial.print(",Xbee1BatteryV:");
-      Serial.print(datastreams[7].getFloat());
-      Serial.print(",Xbee1SolarV:");
-      Serial.print(datastreams[8].getFloat());
-      Serial.print(",HousePowerUse:");
-      Serial.print(datastreams[9].getInt());  
-      Serial.print(",HeaterHotwaterUse:");
-      Serial.print(datastreams[10].getInt());
-      Serial.print(",LightsPowerUse:");
-      Serial.print(datastreams[11].getInt());
-      Serial.print(",WaterusageMinute:");
-      Serial.print(datastreams[12].getFloat());
-      Serial.print(",WaterusageHourly:");
-      Serial.print(datastreams[13].getFloat());  
-      Serial.print(",WaterusageDaily:");
-      Serial.print(datastreams[14].getFloat());
-      Serial.print(",Bedroom1Temp:");
-      Serial.print(datastreams[15].getFloat());
-      Serial.print(",LaundryTemp:");
-      Serial.print(datastreams[16].getFloat());
-      Serial.print(",TotalPower:");
-      Serial.print(realPower4);
-      Serial.print(",Solar:");
-      Serial.print(realPower1);  
-      Serial.print(",PowerP:");
-      Serial.print(realPower2);
-      Serial.print(",HotwaterHeater:");
-      Serial.print(realPower3);
-      Serial.print(",PowerandLights:");
-      Serial.print(realPower5);
-      Serial.print(",TotalCurrent:");
-      Serial.print(Irms4);
-      Serial.print(",SolarCurrent:");
-      Serial.print(Irms1);  
-      Serial.print(",PowerPCurrent:");
-      Serial.print(Irms2);
-      Serial.print(",HydroCurrent:");
-      Serial.print(Irms3);
-      Serial.print(",LineVoltage:");
-      Serial.print(Vrms);
-      Serial.print("}&apikey=");
-      Serial.println(apiKey);         //assuming APIKEY is a char or string
-
-      Serial.println(" HTTP/1.1");   //make sure there is a [space] BEFORE the HTTP
-      Serial.println(F("Host: emoncms.org"));
-      Serial.println(F("User-Agent: Arduino-ethernet"));
-      Serial.println(F("Connection: close"));     //    Although not technically necessary, I found this helpful
-      Serial.println();
-
-      Serial.println("Upload to EmonCMS Completed");
-      Serial.println("===========================");
-    }
-    else {
-      Serial.println("Upload to EmonCMS Failed *************");
-      client.stop();
-    }
-*/
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
     digitalWrite(foyeurLedPin, LOW);
@@ -1016,19 +846,24 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     timer = 0;
     Serial.println();
     processMinute = minute();
-    processDay = day();
-    processHour = hour();
-    Serial.println("end");
-  }
-/*  
+ //   processDay = day();
+    }
+  
    if (processHour != hour()) {
-    KWHourTotal = 0;
-    KWDay += KWHour;
-    lastKWHour = KWHour;
-    KWHour = 0;
+     hourWattTotal += minuteWattTotal;
+     processHour = hour();
+     hourWattTotal / (minute()*6);
+     KWHourTotal = 0;
+     KWDay += KWHour;
+     lastKWHour = KWHour;
+     lastKWHour2 = KWHour2;
+     KWHour = 0;
+     KWHour2 = 0;
+     kwStart = 2;
    }
- */
+   
 }
+
 
 void handleXbeeRxMessage(uint8_t *data, uint8_t length){
   // this is just a stub to show how to get the data,
