@@ -100,8 +100,8 @@ int timer = 0;
 const int hydroLED = 6; //LED that comes on with hotwater/heatpump
 
 float strWater = 0;
-float waterHourly;
-float waterDaily;
+float waterHourly = 0;
+float waterDaily = 0;
 
 char server[] = "http://emoncms.org/";     //emoncms URL
 String apiKey = "ebd4f194e60f6e8694f56aa48b094ddb";
@@ -125,17 +125,24 @@ String Irms2 = "";
 String Irms3 = "";
 String Irms4 = "";
 String Vrms = "";
-
-String foyeurLux = "";
-String hotWaterHot = "";
-String hotWaterCold = "";
-String foyeurHumidity = "";
-String foyeurTemp = "";
-String FoyeurMotion = "";
+float KWHour = 0;
+float KWDay = 0;
+float lastKWHour= 0;
+float lastKWDay = 0;
+float wattTotal = 0;
+float KWHourTotal =0;
+String foyeurLux = 0;
+String hotWaterHot = 0;
+String hotWaterCold = 0;
+String foyeurHumidity = 0;
+String foyeurTemp = 0;
+String FoyeurMotion = 0;
 
 int packetSize = xbeeReadString.length(); 
 int currentCostMinute = 0;
 int processMinute = 0;
+int processHour = 0;
+int processDay = 0;
 
 
 //***************************************************
@@ -143,7 +150,7 @@ void setup() {
   Serial.begin(19200);  //Debug
   Serial1.begin(9600); //Currentcost chat
   Serial2.begin(9600); //Xbee chat
-  Serial3.begin(9600); //Output to pi
+  Serial3.begin(19200); //Output to pi
 
   xbee.setSerial(Serial2); //sets serial2 to be used for xbee library
 
@@ -439,8 +446,11 @@ void loop() {
         float fltPower4 = atof(floatbuf);
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
 
-
-
+wattTotal += fltPower4;
+Serial.print("Watt Total:");Serial.println(wattTotal);
+Serial.print("KW/H:");Serial.println(KWHour/1000);
+Serial.print("Last KW/H:");Serial.println(lastKWHour/1000);
+Serial.print("KW/D:");Serial.println(KWDay/1000);
 /*
         //EmonCMS
         Serial.println("Connecting.....");
@@ -496,7 +506,6 @@ void loop() {
     
         Serial.print("CT1 Solar:");
         Serial.print(realPower1);
-
         Serial.print("  CT2 Spare: ");
         Serial.print(realPower2);
         Serial.print("  CT3 Hydro: ");
@@ -505,7 +514,6 @@ void loop() {
         Serial.print(realPower4);
         Serial.print("  PP/Lights: ");
         Serial.println(fltPower5);
-
         Serial.print("CT1 Current:");
         Serial.print(Irms1);
         Serial.print("  CT2 Current:");
@@ -514,7 +522,6 @@ void loop() {
         Serial.print(Irms3);
         Serial.print("  CT4 Current:");
         Serial.println(Irms4);
-
         Serial.print("Line Voltage:");
         Serial.println(Vrms);
         Serial.println("===========================");
@@ -716,6 +723,9 @@ void loop() {
 */
   if (processMinute != minute()) {
     digitalClockDisplay();   
+    KWHourTotal +=(wattTotal / 6);
+    KWHour = KWHourTotal /(minute()+1);
+    wattTotal = 0;
 
     float barometerTemp = (bmp.readTemperature());
     Serial.print("Barometer Temperature = ");
@@ -783,8 +793,9 @@ void loop() {
     Serial3.print("HotwaterColdInTemp:");Serial3.print(hotWaterCold);Serial3.print(",");
     Serial3.print("FoyeurHumidity:");Serial3.print(foyeurHumidity);Serial3.print(",");
     Serial3.print("FoyeurTemp:");Serial3.print(foyeurTemp);Serial3.print(",");
-    Serial3.print("FoyeurMotion:");Serial3.print(FoyeurMotion);Serial3.print(",");
-   /* Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
+    Serial3.print("FoyeurMotion:");Serial3.print(FoyeurMotion);
+   /* 
+    Serial3.print("TotalPowerWatts:");Serial3.print(realPower4);Serial3.print(",");
     Serial3.print("SolarWatts:");Serial3.print(realPower1);Serial3.print(",");    
     Serial3.print("SpareWatts:");Serial3.print(realPower2);Serial3.print(",");    
     Serial3.print("HotWaterHeaterWatts:");Serial3.print(realPower3);Serial3.print(",");    
@@ -995,13 +1006,22 @@ void loop() {
 */
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
-      digitalWrite(foyeurLedPin, LOW);
+    digitalWrite(foyeurLedPin, LOW);
     commsMotion = 0;
     timer = 0;
     Serial.println();
     processMinute = minute();
+    processDay = day();
+    processHour = hour();
     Serial.println("end");
   }
+  
+   if (processHour != hour()) {
+    KWHourTotal = 0;
+    KWDay += KWHour;
+    lastKWHour = KWHour;
+    KWHour = 0;
+   }
  
 }
 
