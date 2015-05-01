@@ -144,7 +144,7 @@ int processMinute = 0;
 int processHour = 0;
 int processDay = 0;
 
-
+int debug = 0;
 //***************************************************
 void setup() {
   Serial.begin(19200);  //Debug
@@ -247,7 +247,6 @@ void loop() {
       // now that you know it's a receive packet
       // fill in the values
       xbee.getResponse().getZBRxResponse(rx);
-
       // this is how you get the 64 bit address out of
       // the incoming packet so you know which device
       // it came from
@@ -256,18 +255,14 @@ void loop() {
       print32Bits(senderLongAddress.getMsb());
       Serial.print(" ");
       print32Bits(senderLongAddress.getLsb());
-
       // this is how to get the sender's
       // 16 bit address and show it
       uint16_t senderShortAddress = rx.getRemoteAddress16();
       Serial.print(" (");
       print16Bits(senderShortAddress);
       Serial.println(")");
-
-      Serial.print(" ");
       Serial.print(senderLongAddress.getLsb());
       uint32_t xbee = (senderLongAddress.getLsb());  
-
       // The option byte is a bit field
       if (rx.getOption() & ZB_PACKET_ACKNOWLEDGED)
         // the sender got an ACK
@@ -275,20 +270,18 @@ void loop() {
       if (rx.getOption() & ZB_BROADCAST_PACKET)
         // This was a broadcast packet
         Serial.println("broadcast Packet");
-
+      if(debug==1){
       Serial.print("checksum is ");
       Serial.print(rx.getChecksum(), HEX);
       Serial.print(" ");
-
       // this is the packet length
       Serial.print("packet length is ");
       Serial.print(rx.getPacketLength(), DEC);
-
       // this is the payload length, probably
       // what you actually want to use
       Serial.print(", data payload length is ");
       Serial.println(rx.getDataLength(),DEC);
-
+      
       // this is the actual data you sent
      // Serial.println("Received Data: ");
       //for (int i = 0; i < rx.getDataLength(); i++) {
@@ -314,7 +307,8 @@ void loop() {
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
       packetSize = xbeeReadString.length(); 
-
+      }
+      
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
         String water = xbeeReadString.substring(19, 25);
@@ -345,11 +339,12 @@ void loop() {
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
         Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 49);
+        if(debug = 1) {
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
         Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
-
+        }
         foyeurLux = xbeeReadString2.substring(0, 6);
         hotWaterHot = xbeeReadString2.substring(7, 12);
         hotWaterCold = xbeeReadString2.substring(13, 18);
@@ -384,10 +379,12 @@ void loop() {
       if(xbee == 1081730785 && packetSize < 35) {
         Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 32);
+                if(debug = 1) {
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
         Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
+                }
         String FoyeurMotion = xbeeReadString2.substring(0, 1);
         Serial.print("Foyeur Motion: ");         
         Serial.println(FoyeurMotion);
@@ -405,13 +402,15 @@ void loop() {
 
       if(xbee == 1081730797 && packetSize > 20) { //powermeter
         Serial.println("=========Power Meter=========");
-        Serial.print("Packet Size: ");         
-        Serial.println(packetSize,DEC);
         String xbeeReadString2 = xbeeReadString.substring(17, 83);
-        Serial.print("String1=");
-        Serial.println(xbeeReadString);
-        Serial.print("String2=");
-        Serial.println(xbeeReadString2);
+        if(debug = 1) {
+          Serial.print("Packet Size: ");         
+          Serial.println(packetSize,DEC);
+          Serial.print("String1=");
+          Serial.println(xbeeReadString);
+          Serial.print("String2=");
+          Serial.println(xbeeReadString2);
+                }
 
         realPower1 = xbeeReadString2.substring(0, 8);
         realPower2 = xbeeReadString2.substring(9, 17);
@@ -447,10 +446,10 @@ void loop() {
         float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
 
 wattTotal += fltPower4;
-Serial.print("Watt Total:");Serial.println(wattTotal);
-Serial.print("KW/H:");Serial.println(KWHour/1000);
-Serial.print("Last KW/H:");Serial.println(lastKWHour/1000);
-Serial.print("KW/D:");Serial.println(KWDay/1000);
+Serial.print("Watt Total:");Serial.print(wattTotal);
+Serial.print("---KW/H:");Serial.print(KWHour/1000);
+Serial.print("---Last KW/H:");Serial.print(lastKWHour/1000);
+Serial.print("---KW/D:");Serial.println(KWDay/1000);
 /*
         //EmonCMS
         Serial.println("Connecting.....");
@@ -506,8 +505,8 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
     
         Serial.print("CT1 Solar:");
         Serial.print(realPower1);
-        Serial.print("  CT2 Spare: ");
-        Serial.print(realPower2);
+  //      Serial.print("  CT2 Spare: "); //not hooked up
+  //      Serial.print(realPower2);
         Serial.print("  CT3 Hydro: ");
         Serial.print(realPower3);
         Serial.print("  CT4 Total: ");
@@ -545,16 +544,19 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
     else if (xbee.getResponse().getApiId() == ZB_IO_SAMPLE_RESPONSE) {
       xbee.getResponse().getZBRxIoSampleResponse(ioSample);
       XBeeAddress64 senderLongAddress = ioSample.getRemoteAddress64();
-      Serial.println(senderLongAddress.getLsb());
+//      Serial.println(senderLongAddress.getLsb()); //moved down
       uint32_t xbee = (senderLongAddress.getLsb());
 
       if (ioSample.containsAnalog()) {
         // Serial.println("Sample contains analog data");
         Serial.println("Received I/O Sample from: ");
+        Serial.println(senderLongAddress.getLsb());
         // this is how you get the 64 bit address out of
         // the incoming packet so you know which device
         // it came from
         uint8_t bitmask = ioSample.getAnalogMask();
+
+       if(debug=1) {
         for (uint8_t x = 0; x < 8; x++){
           if ((bitmask & (1 << x)) != 0){
             Serial.print("position ");
@@ -564,6 +566,7 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
             Serial.println();
           }
         }
+      }
       }
       if (xbee == 1083188734) {
         Serial.println("==========Outside==========");
@@ -833,6 +836,8 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
     // Serial3.print(",");
 */
     //debug console   
+    
+    if(debug=1) {
     Serial.print("CommsMotion:");Serial.print(datastreams[0].getInt());Serial.print(",");
     Serial.print("CommsTemp:");Serial.print(datastreams[1].getFloat());Serial.print(",");
     Serial.print("CommsBarometer:");Serial.print(datastreams[2].getFloat());Serial.print(",");
@@ -866,7 +871,7 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
     Serial.print("SpareCurrent:");Serial.print(Irms2);Serial.print(",");    
     Serial.print("hotwater&Heater:");Serial.print(Irms3);Serial.print(",");
     Serial.print("LineVoltage:");Serial.println(Vrms);  
-
+    }
     Serial.println("********SQL Injected!*********");
     Serial.println();
 
@@ -1015,14 +1020,14 @@ Serial.print("KW/D:");Serial.println(KWDay/1000);
     processHour = hour();
     Serial.println("end");
   }
-  
+/*  
    if (processHour != hour()) {
     KWHourTotal = 0;
     KWDay += KWHour;
     lastKWHour = KWHour;
     KWHour = 0;
    }
- 
+ */
 }
 
 void handleXbeeRxMessage(uint8_t *data, uint8_t length){
