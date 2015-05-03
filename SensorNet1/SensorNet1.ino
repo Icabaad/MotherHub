@@ -100,6 +100,7 @@ int timer = 0;
 const int hydroLED = 6; //LED that comes on with hotwater/heatpump
 
 float strWater = 0;
+float strBatteryV = 0;
 float waterHourly = 0;
 float waterDaily = 0;
 
@@ -238,14 +239,14 @@ void loop() {
     commsMotion = 1;
   }
   datastreams[0].setInt(commsMotion);
-
+/*
         if(minute() == 59 && second() == 59) { //Watertimer resets
           waterHourly = 0;
         }
         if(hour() == 23 && minute() == 59 && second() == 59) {
           waterDaily = 0;
         }
-
+*/
 
   //xbee
   //attempt to read a packet    
@@ -326,15 +327,27 @@ void loop() {
       
       if(xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
-        String water = xbeeReadString.substring(19, 25);
+        String water = xbeeReadString.substring(17, 22);
+        String batteryV = xbeeReadString.substring(23, 30);
+        
+        water.trim();
+        batteryV.trim();
+        Serial.println(water);
+        Serial.println(batteryV);
         char floatbuf[8]; // make this at least big enough for the whole string
         water.toCharArray(floatbuf, sizeof(floatbuf));
         strWater = atof(floatbuf);
+         batteryV.toCharArray(floatbuf, sizeof(floatbuf));
+         strBatteryV = atof(floatbuf) * (3.3 / 1023);
+             
         waterHourly = waterHourly + strWater;
         waterDaily = waterDaily + strWater;
         datastreams[12].setFloat(strWater);
         datastreams[13].setFloat(waterHourly);
         datastreams[14].setFloat(waterDaily);
+        Serial.print("Battery Voltage:");
+        Serial.print(strBatteryV);
+        Serial.println("V");
         Serial.print("water use:");
         Serial.print(strWater);
         Serial.println("L/min");
@@ -781,7 +794,7 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial3.print("OutsideSolarV:");Serial3.print(datastreams[8].getFloat());Serial3.print(",");
     //Serial3.print("CommsMotion:");Serial3.print(datastreams[9].getInt());Serial3.print(",");
     //Serial3.print("CommsMotion:");Serial3.print(datastreams[10].getInt());Serial3.print(",");
-    //Serial3.print("CommsMotion:");Serial3.print(datastreams[11].getInt());Serial3.print(",");
+    Serial3.print("WaterBattery:");Serial3.print(strBatteryV);Serial3.print(",");
     Serial3.print("WatterUsage:");Serial3.print(datastreams[12].getFloat());Serial3.print(",");
     Serial3.print("WaterusageHourly:");Serial3.print(datastreams[13].getFloat());Serial3.print(",");
     Serial3.print("WaterusageDaily:");Serial3.print(datastreams[14].getFloat());Serial3.print(",");
@@ -807,7 +820,7 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial.print("OutsideSolarV:");Serial.print(datastreams[8].getFloat());Serial.print(",");
     //Serial.print("CommsMotion:");Serial.print(datastreams[9].getInt());Serial.print(",");
     //Serial.print("CommsMotion:");Serial.print(datastreams[10].getInt());Serial.print(",");
-    //Serial.print("CommsMotion:");Serial.print(datastreams[11].getInt());Serial.print(",");
+    Serial.print("WaterBattery:");Serial.print(strBatteryV);Serial.print(",");
     Serial.print("WatterUsage:");Serial.print(datastreams[12].getFloat());Serial.print(",");
     Serial.print("WaterusageHourly:");Serial.print(datastreams[13].getFloat());Serial.print(",");
     Serial.print("WaterusageDaily:");Serial.print(datastreams[14].getFloat());Serial.print(",");
@@ -860,8 +873,13 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
      KWHour = 0;
      KWHour2 = 0;
      kwStart = 2;
+     waterHourly = 0;
    }
    
+   if (processDay != day()) {
+     processDay = day();
+     waterDaily = 0 ;
+   } 
 }
 
 
