@@ -846,11 +846,12 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial.println("********SQL Injected!*********");
     Serial.println();
 
+/*
     Serial.println("Uploading it to Xively");
     int ret = xivelyclient.put(feed, xivelyKey);
     Serial.print("xivelyclient.put returned ");
     Serial.println(ret);
-
+*/
 
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
@@ -874,6 +875,9 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
      KWHour2 = 0;
      kwStart = 2;
      waterHourly = 0;
+     Serial.println(")************************");
+     digitalClockDisplay();
+     Serial.println(")************************");
    }
    
    if (processDay != day()) {
@@ -941,13 +945,7 @@ void print8Bits(byte c){
   else
     Serial.write(nibble + 0x37);
 }
-void printDigits(int digits){
-  // utility function for digital clock display: prints preceding colon and leading 0
-  Serial.print(":");
-  if(digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
-}
+
 void digitalClockDisplay(){
   // digital clock display of the time
   Serial.print(hour());
@@ -962,9 +960,13 @@ void digitalClockDisplay(){
   Serial.println(); 
 }
 
-
-
-
+void printDigits(int digits){
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
+}
 
 
 
