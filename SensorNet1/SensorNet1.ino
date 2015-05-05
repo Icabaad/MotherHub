@@ -115,17 +115,17 @@ int values[fNumber]; //array holding values
 String xbeeReadString = "";
 String xbeeReadString2 = "";
 
-String realPower1 = "";
-String realPower2 = "";
-String realPower3 = "";
-String realPower4 = "";
+String realPower1 = 0;
+String realPower2 = 0;
+String realPower3 = 0;
+String realPower4 = 0;
 float realPower5 = 0;
 float fltPower5 = 0;
-String Irms1 = "";
-String Irms2 = "";
-String Irms3 = "";
-String Irms4 = "";
-String Vrms = "";
+String Irms1 = 0;
+String Irms2 = 0;
+String Irms3 = 0;
+String Irms4 = 0;
+String Vrms = 0;
 float KWHour = 0;
 float KWHour2 = 0;
 float KWDay = 0;
@@ -137,12 +137,17 @@ float hourWattTotal = 0;
 float KWHourTotal =0;
 int kwStart = 0;
 int firstStart =0;
+
 String foyeurLux = 0;
 String hotWaterHot = 0;
 String hotWaterCold = 0;
 String foyeurHumidity = 0;
 String foyeurTemp = 0;
 String FoyeurMotion = 0;
+float bathroomTemp = 0;
+float bathroomVolt = 0;
+float livingTemp = 0;
+float livingVolt = 0;
 
 int packetSize = xbeeReadString.length(); 
 int currentCostMinute = 0;
@@ -264,7 +269,7 @@ void loop() {
       XBeeAddress64 senderLongAddress = rx.getRemoteAddress64();
       Serial.print("Got an rx packet from: ");
       
-      if (debug == 1) {
+     
       print32Bits(senderLongAddress.getMsb());
       Serial.print(" ");
       print32Bits(senderLongAddress.getLsb());
@@ -275,7 +280,7 @@ void loop() {
       print16Bits(senderShortAddress);
       Serial.println(")");
       Serial.print(senderLongAddress.getLsb());
-      }
+     
         
       uint32_t xbee = (senderLongAddress.getLsb());  
       // The option byte is a bit field
@@ -286,7 +291,7 @@ void loop() {
         // This was a broadcast packet
         Serial.println("broadcast Packet");
       
-      if(debug==1){
+    
       Serial.print("checksum is ");
       Serial.print(rx.getChecksum(), HEX);
       Serial.print(" ");
@@ -322,7 +327,7 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       Serial.print("xbeereadstring:");
       Serial.println(xbeeReadString);
-      }
+      
       packetSize = xbeeReadString.length(); 
       
       if(xbee == 1084373003) { //Watermeter
@@ -631,14 +636,47 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
         //to degrees ((volatge - 500mV) times 100)
         Serial.print(temperatureC); 
         Serial.print(" degrees C ");
-        datastreams[16].setFloat(temperatureC);
-
         int vReading3 = (ioSample.getAnalog(7));
         float xbee1v = vReading3 * 1.2 / 1024;      
         Serial.print(xbee1v); 
         Serial.println(" Xbee Voltage Not logged");
         Serial2.flush();     
         Serial.println("===========================");
+      }
+      if (xbee == 1085374409) {
+        Serial.println("==========Living Room==========");
+        int reading = (ioSample.getAnalog(0));
+        float voltage = reading * 1.2;
+        voltage /= 1024.0; 
+        livingTemp = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+        //to degrees ((volatge - 500mV) times 100)
+        Serial.print(livingTemp); 
+        Serial.println(" degrees C");
+        int vReading4 = (ioSample.getAnalog(7));
+        livingVolt = vReading4 * 1.2 / 1024;      
+        // voltage /= 1024.0; 
+        Serial.print(livingVolt); 
+        Serial.println(" Xbee Voltage Not logged");
+        Serial.println("===========================");
+        Serial2.flush();
+      }
+      if (xbee == 1085233956) {
+        Serial.println("==========Bathroom==========");
+        int reading = (ioSample.getAnalog(0));
+        float voltage = reading * 1.2;
+        voltage /= 1024.0; 
+        bathroomTemp = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+        //to degrees ((volatge - 500mV) times 100)
+        Serial.print(bathroomTemp); 
+        Serial.println(" degrees C");
+        
+        int vReading3 = (ioSample.getAnalog(7));
+        bathroomVolt = vReading3 * 1.2 / 1024;      
+        // voltage /= 1024.0; 
+        Serial.print(bathroomVolt); 
+        Serial.println(" Xbee Voltage Not logged");
+        Serial.println("===========================");
+        Serial2.flush();
       }
     }
 
@@ -720,7 +758,7 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
       hourWattTotal += minuteWattTotal;
       KWHourTotal +=(minuteWattTotal / 6);
       KWHour = KWHourTotal / ((minute()+1) -kwStart);
-      KWHour2 = hourWattTotal / ((minute()+1) -kwStart * 6);
+      KWHour2 = hourWattTotal / ((minute()+1) -kwStart / 6);
       minuteWattTotal = 0;
       firstStart = 1;
     }
@@ -728,14 +766,14 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
       hourWattTotal += minuteWattTotal;
       KWHourTotal +=(minuteWattTotal / 6);
       KWHour = KWHourTotal / ((minute()+1) -kwStart);
-      KWHour2 = hourWattTotal / ((minute()+1) -kwStart * 6);
+      KWHour2 = hourWattTotal / ((minute()+1) -kwStart / 6);
       minuteWattTotal = 0;
     } 
     else if(firstStart == 2) {
       hourWattTotal += minuteWattTotal;
       KWHourTotal +=(minuteWattTotal / 6);
       KWHour = KWHourTotal / (minute()+1);
-      KWHour2 = hourWattTotal / ((minute()+1) * 6);
+      KWHour2 = hourWattTotal / ((minute()+1) / 6);
       minuteWattTotal = 0;
 }
   
@@ -805,10 +843,12 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial3.print("HotwaterColdInTemp:");Serial3.print(hotWaterCold);Serial3.print(",");
     Serial3.print("FoyeurHumidity:");Serial3.print(foyeurHumidity);Serial3.print(",");
     Serial3.print("FoyeurTemp:");Serial3.print(foyeurTemp);Serial3.print(",");
+    Serial3.print("Bathroomtemp:");Serial3.print(bathroomTemp);Serial3.print(",");
+    Serial3.print("LivingTemp:");Serial3.print(livingTemp);Serial3.print(",");
     Serial3.print("FoyeurMotion:");Serial3.print(FoyeurMotion);
   
     //debug console   
-    if(debug=1) {
+    if (debug > 0 ) {
     Serial.print("CommsMotion:");Serial.print(datastreams[0].getInt());Serial.print(",");
     Serial.print("CommsTemp:");Serial.print(datastreams[1].getFloat());Serial.print(",");
     Serial.print("CommsBarometer:");Serial.print(datastreams[2].getFloat());Serial.print(",");
