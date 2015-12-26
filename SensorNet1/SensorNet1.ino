@@ -115,17 +115,17 @@ int values[fNumber]; //array holding values
 String xbeeReadString = "";
 String xbeeReadString2 = "";
 
-String realPower1 = 0;
-String realPower2 = 0;
-String realPower3 = 0;
-String realPower4 = 0;
+String realPower1;
+String realPower2;
+String realPower3;
+String realPower4;
 float realPower5 = 0;
 float fltPower5 = 0;
-String Irms1 = 0;
-String Irms2 = 0;
-String Irms3 = 0;
-String Irms4 = 0;
-String Vrms = 0;
+String Irms1;
+String Irms2;
+String Irms3;
+String Irms4;
+String Vrms;
 float KWHour = 0;
 float KWHour2 = 0;
 float KWDay = 0;
@@ -138,12 +138,12 @@ float KWHourTotal =0;
 int kwStart = 0;
 int firstStart =0;
 
-String foyeurLux = 0;
-String hotWaterHot = 0;
-String hotWaterCold = 0;
-String foyeurHumidity = 0;
-String foyeurTemp = 0;
-String FoyeurMotion = 0;
+String foyeurLux;
+String hotWaterHot;
+String hotWaterCold;
+String foyeurHumidity;
+String foyeurTemp;
+String FoyeurMotion;
 float bathroomTemp = 0;
 float bathroomVolt = 0;
 float livingTemp = 0;
@@ -155,7 +155,7 @@ int processMinute = 0;
 int processHour = 0;
 int processDay = 0;
 
-int debug = 0;
+int debug = 1;
 
 //***************************************************
 void setup() {
@@ -371,19 +371,19 @@ void loop() {
 
       if(xbee == 1081730785 && packetSize > 40) { //Foyeur
         Serial.println("=========Foyeur=========");
-        String xbeeReadString2 = xbeeReadString.substring(17, 49);
+        String xbeeReadString2 = xbeeReadString.substring(17, 51);
         if(debug == 1) {
         Serial.print("String1=");
         Serial.println(xbeeReadString);
         Serial.print("String2=");
-        Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0õ
+        Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0
         }
-        foyeurLux = xbeeReadString2.substring(0, 6);
-        hotWaterHot = xbeeReadString2.substring(7, 12);
-        hotWaterCold = xbeeReadString2.substring(13, 18);
-        foyeurHumidity = xbeeReadString2.substring(19, 24);
-        foyeurTemp = xbeeReadString2.substring(25, 30);
-        FoyeurMotion = xbeeReadString2.substring(31, 32);
+        foyeurLux = xbeeReadString2.substring(0, 7);
+        hotWaterHot = xbeeReadString2.substring(8, 13);
+        hotWaterCold = xbeeReadString2.substring(14, 19);
+        foyeurHumidity = xbeeReadString2.substring(20, 25);
+        foyeurTemp = xbeeReadString2.substring(26, 31);
+        FoyeurMotion = xbeeReadString2.substring(32, 33);
 
         foyeurLux.trim();
         hotWaterHot.trim();
@@ -698,8 +698,6 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
   //*****************************************************
   //         Power receipt
   //*****************************************************
-
-
   if (currentCostMinute != minute()) {
     Serial.println("==========CurrentCost==========");
     Serial1.write("S");
@@ -734,7 +732,6 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
         datastreams[11].setInt(values[2]);
       }
     }
-
     Serial.print("totalpower: "); 
     Serial.println(values[0]);
     Serial.print("hydro: ");   
@@ -742,14 +739,11 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
     Serial.print("lightsandpowah: "); 
     Serial.println(values[2]);
     Serial.println();
-
     fieldIndex = 0; //reset
     Serial.println("===========================");
     Serial1.flush();
-
     currentCostMinute = minute();
   }
-
 */
   if (processMinute != minute()) {
     digitalClockDisplay();   
@@ -1007,26 +1001,3 @@ void printDigits(int digits){
     Serial.print('0');
   Serial.print(digits);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
