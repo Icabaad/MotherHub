@@ -155,7 +155,7 @@ int processMinute = 0;
 int processHour = 0;
 int processDay = 0;
 
-int debug = 1;
+int debug = 0;
 
 //***************************************************
 void setup() {
@@ -642,7 +642,9 @@ Serial.print("---KW/D:");Serial.println(KWDay/1000);
         Serial.println(" Xbee Voltage Not logged");
         Serial2.flush();     
         Serial.println("===========================");
+        datastreams[16].setFloat(temperatureC);
       }
+      
       if (xbee == 1085374409) {
         Serial.println("==========Living Room==========");
         int reading = (ioSample.getAnalog(0));
