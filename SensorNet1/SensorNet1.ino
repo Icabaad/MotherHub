@@ -386,35 +386,38 @@ void loop() {
         xbeeReadString2 = "";
 
       }
-      if (xbee == 1085127839) { //Weather Station
-        Serial.println("=========Weather Station=========");
-        String xbeeReadString2 = xbeeReadString.substring(17, 115);
-        String batteryV = xbeeReadString.substring(116, 123);
-        weather.trim();
+
+      if (xbee == 1085127839 && packetSize > 60) { //Weather Station
+        Serial.println("=========Weather Station 1=========");
+        String xbeeReadString2 = xbeeReadString.substring(17, 100);
+        String batteryV = xbeeReadString.substring(84, 89);
+        //        xbeeReadString2.trim();
         batteryV.trim();
-        Serial.println(weather);
+        Serial.println(xbeeReadString2);
         Serial.println(batteryV);
-        char floatbuf[130]; // make this at least big enough for the whole string
-        weather.toCharArray(floatbuf, sizeof(floatbuf));
-        strWeather = atof(floatbuf);
+        char floatbuf[30]; // make this at least big enough for the whole string
+        //    xbeeReadString2.toCharArray(floatbuf, sizeof(floatbuf));
+        //strWeather = atof(floatbuf);
         batteryV.toCharArray(floatbuf, sizeof(floatbuf));
         strBatteryV = atof(floatbuf) * (3.3 / 1023);
 
-        winDir = xbeeReadString2.substring(0, 4);
-        windSpeedkph = xbeeReadString2.substring(5, 13);
-        windGustkph = xbeeReadString2.substring(14, 22);
-        windGustDir = xbeeReadString2.substring(23, 27);
-        windSpdkph_avg2m = xbeeReadString2.substring(28, 36);
-        windDir_avg2m = xbeeReadString2.substring(37, 41);
-        windGustkph_10m = xbeeReadString2.substring(42, 50);
-        windGustDir_10m = xbeeReadString2.substring(51, 55);
-        humidity = xbeeReadString2.substring(56, 62);
-        WeatherSTemp = xbeeReadString2.substring(63, 69);
-        rainIn = xbeeReadString2.substring(70, 78);
-        dailyRainIn = xbeeReadString2.substring(79, 87);
-        pressure = xbeeReadString2.substring(88, 95);
-        batt_lvl = xbeeReadString2.substring(96, 105);
-        light_lvl = xbeeReadString2.substring(106, 115);
+        winDir = xbeeReadString2.substring(0, 3);
+        windSpeedkph = xbeeReadString2.substring(4, 9);
+        windGustkph = xbeeReadString2.substring(10, 15);
+        windGustDir = xbeeReadString2.substring(16, 19);
+        windSpdkph_avg2m = xbeeReadString2.substring(20, 25);
+        windDir_avg2m = xbeeReadString2.substring(26, 29);
+        windGustkph_10m = xbeeReadString2.substring(30, 35);
+        windGustDir_10m = xbeeReadString2.substring(36, 39);
+        humidity = xbeeReadString2.substring(40, 45);
+        WeatherSTemp = xbeeReadString2.substring(46, 51);
+        rainIn = xbeeReadString2.substring(52, 56);
+        dailyRainIn = xbeeReadString2.substring(57, 64);
+        /*
+          pressure = xbeeReadString2.substring(65, 71);
+          batt_lvl = xbeeReadString2.substring(72, 77);
+          light_lvl = xbeeReadString2.substring(78, 83);
+        */
 
         winDir.trim();
         windSpeedkph.trim();
@@ -428,9 +431,11 @@ void loop() {
         WeatherSTemp.trim();
         rainIn.trim();
         dailyRainIn.trim();
-        pressure.trim();
-        batt_lvl.trim();
-        light_lvl.trim();
+        /*
+          pressure.trim();
+          batt_lvl.trim();
+          light_lvl.trim();
+        */
 
         Serial.print("winddir=");
         Serial.print(winDir);
@@ -456,20 +461,52 @@ void loop() {
         Serial.print(rainIn);
         Serial.print(",dailyrainin=");
         Serial.print(dailyRainIn);
-        Serial.print(",pressure=");
-        Serial.print(pressure);
-        Serial.print(",batt_lvl=");
-        Serial.print(batt_lvl);
-        Serial.print(",light_lvl=");
-        Serial.print(light_lvl);
+        /*
+          Serial.print(",pressure=");
+          Serial.print(pressure);
+          Serial.print(",batt_lvl=");
+          Serial.print(batt_lvl);
+          Serial.print(",light_lvl=");
+          Serial.print(light_lvl);
+        */
+        Serial.print(",XBee V=");
+        Serial.print(strBatteryV);
         Serial.println("===========================");
         Serial2.flush();
         xbeeReadString = "";
         xbeeReadString2 = "";
       }
 
+      if (xbee == 1085127839 && packetSize < 60) { //Weather Station
+      Serial.println("=========Weather Station 2=========");
+        String xbeeReadString2 = xbeeReadString.substring(17, 36);
+        Serial.println(xbeeReadString2);
+        char floatbuf[30]; // make this at least big enough for the whole string
+
+        pressure = xbeeReadString2.substring(0, 6);
+        batt_lvl = xbeeReadString2.substring(7, 12);
+        light_lvl = xbeeReadString2.substring(13, 18);
+
+        pressure.trim();
+        batt_lvl.trim();
+        light_lvl.trim();
+
+        Serial.print("pressure=");
+        Serial.print(pressure);
+        Serial.print(",batt_lvl=");
+        Serial.print(batt_lvl);
+        Serial.print(",light_lvl=");
+        Serial.print(light_lvl);
+        Serial.println("===========================");
+
+        Serial2.flush();
+        xbeeReadString = "";
+        xbeeReadString2 = "";
+
+      }
+      
       if (xbee == 1081730785 && packetSize > 40) { //Foyeur
-        Serial.println("=========Foyeur=========");
+      Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 51);
         if (debug == 1) {
           Serial.print("String1=");
@@ -506,10 +543,12 @@ void loop() {
         xbeeReadString = "";
         xbeeReadString2 = "";
 
+
+
       }
 
       if (xbee == 1081730785 && packetSize < 35) {
-        Serial.println("=========Foyeur=========");
+      Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 32);
         if (debug == 1) {
           Serial.print("String1=");
@@ -533,7 +572,7 @@ void loop() {
 
 
       if (xbee == 1081730797 && packetSize > 20) { //powermeter
-        Serial.println("=========Power Meter=========");
+      Serial.println("=========Power Meter=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 83);
         if (debug == 1) {
           Serial.print("Packet Size: ");
