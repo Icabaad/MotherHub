@@ -116,12 +116,26 @@ int values[fNumber]; //array holding values
 String xbeeReadString = "";
 String xbeeReadString2 = "";
 
+String sensorData = "";
+
+String TotalPowerWatts = "TotalPowerWatts";
+String SolarWatts = "SolarWatts";
+String SpareWatts = "SpareWatts";
+String HotWaterHeaterWatts = "HotWaterHeaterWatts";
+String PowerPointsLights = "PowerPointsLights";
+String TotalCurrent = "TotalCurrent";
+String SolarCurrent = "SolarCurrent";
+String SpareCurrent = "SpareCurrent";
+String hotwaterHeaterCurrent = "hotwaterHeaterCurrent";
+String ACVoltage = "ACVoltage";
+
 String realPower1;
 String realPower2;
 String realPower3;
 String realPower4;
-float realPower5 = 0;
-float fltPower5 = 0;
+String realPower5;
+String fltPower5;
+float fltpower;
 String Irms1;
 String Irms2;
 String Irms3;
@@ -146,9 +160,9 @@ String foyeurHumidity;
 String foyeurTemp;
 String FoyeurMotion;
 float bathroomTemp = 0;
-float bathroomVolt = 0;
+float bathroomVoltage = 0;
 float livingTemp = 0;
-float livingVolt = 0;
+float livingVoltage = 0;
 
 String strWeather;
 String winDir;
@@ -178,7 +192,7 @@ int debug = 0;
 //***************************************************
 void setup() {
   Serial.begin(19200);  //Debug
-  Serial1.begin(9600); //Currentcost chat
+  //  Serial1.begin(9600); //Currentcost chat //Now obsolete with powerArdy
   Serial2.begin(9600); //Xbee chat
   Serial3.begin(19200); //Output to pi
 
@@ -478,7 +492,7 @@ void loop() {
       }
 
       if (xbee == 1085127839 && packetSize < 60) { //Weather Station
-      Serial.println("=========Weather Station 2=========");
+        Serial.println("=========Weather Station 2=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 36);
         Serial.println(xbeeReadString2);
         char floatbuf[30]; // make this at least big enough for the whole string
@@ -504,9 +518,9 @@ void loop() {
         xbeeReadString2 = "";
 
       }
-      
+
       if (xbee == 1081730785 && packetSize > 40) { //Foyeur
-      Serial.println("=========Foyeur=========");
+        Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 51);
         if (debug == 1) {
           Serial.print("String1=");
@@ -548,7 +562,7 @@ void loop() {
       }
 
       if (xbee == 1081730785 && packetSize < 35) {
-      Serial.println("=========Foyeur=========");
+        Serial.println("=========Foyeur=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 32);
         if (debug == 1) {
           Serial.print("String1=");
@@ -572,7 +586,7 @@ void loop() {
 
 
       if (xbee == 1081730797 && packetSize > 20) { //powermeter
-      Serial.println("=========Power Meter=========");
+        Serial.println("=========Power Meter=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 83);
         if (debug == 1) {
           Serial.print("Packet Size: ");
@@ -603,16 +617,21 @@ void loop() {
         Irms4.trim();
 
         //Replaced with trim function above. Stoll needed for realpower5
-        char floatbuf[10]; // make this at least big enough for the whole string
+        char floatbuf[15]; // make this at least big enough for the whole string
         realPower1.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower1 = atof(floatbuf);
         realPower2.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower2 = atof(floatbuf);
         realPower3.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower3 = atof(floatbuf);
+
         realPower4.toCharArray(floatbuf, sizeof(floatbuf));
         float fltPower4 = atof(floatbuf);
-        float fltPower5 = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
+
+        float fltPower = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
+        dtostrf(fltPower, 8, 2, floatbuf);        
+        fltPower5 = String(floatbuf);
+
 
         minuteWattTotal += fltPower4;
         Serial.println();
@@ -622,41 +641,55 @@ void loop() {
         Serial.print("---Last KW/H:"); Serial.print(lastKWHour / 1000);
         Serial.print("---Last KW/H:"); Serial.print(lastKWHour2 / 1000);
         Serial.print("---KW/D:"); Serial.println(KWDay / 1000);
+/*
+        String sensorData = startFloatToString(TotalPowerWatts, realPower4);
+        sensorData = addToString(sensorData, SolarWatts, realPower1);
+        sensorData = addToString(sensorData, SpareWatts, realPower2);
+        sensorData = addToString(sensorData, HotWaterHeaterWatts, realPower3);
+        sensorData = addToString(sensorData, PowerPointsLights, fltPower5);
+        sensorData = addToString(sensorData, TotalCurrent, Irms4);
+        sensorData = addToString(sensorData, SolarCurrent, Irms1);
+        sensorData = addToString(sensorData, SpareCurrent, Irms2);
+        sensorData = addToString(sensorData, hotwaterHeaterCurrent, Irms3);
+        sensorData = addToString(sensorData, ACVoltage, Vrms);
+        Serial.println(sensorData);
+        Serial3.println(sensorData);
+*/
+      
+               Serial.println("************Power stats sent to python***********");
+               Serial3.print("TotalPowerWatts:"); Serial3.print(realPower4); Serial3.print(",");
+               Serial3.print("SolarWatts:"); Serial3.print(realPower1); Serial3.print(",");
+               Serial3.print("SpareWatts:"); Serial3.print(realPower2); Serial3.print(",");
+               Serial3.print("HotWaterHeaterWatts:"); Serial3.print(realPower3); Serial3.print(",");
+               Serial3.print("PowerpointsLights:"); Serial3.print(fltPower5); Serial3.print(",");
+               Serial3.print("TotalCurrent:"); Serial3.print(Irms4); Serial3.print(",");
+               Serial3.print("SolarCurrent:"); Serial3.print(Irms1); Serial3.print(",");
+               Serial3.print("SpareCurrent:"); Serial3.print(Irms2); Serial3.print(",");
+               Serial3.print("hotwaterHeaterCurrent:"); Serial3.print(Irms3); Serial3.print(",");
+               Serial3.print("LineVoltage:"); Serial3.println(Vrms);
 
-        Serial.println("************Power stats sent to python***********");
-        Serial3.print("TotalPowerWatts:"); Serial3.print(realPower4); Serial3.print(",");
-        Serial3.print("SolarWatts:"); Serial3.print(realPower1); Serial3.print(",");
-        Serial3.print("SpareWatts:"); Serial3.print(realPower2); Serial3.print(",");
-        Serial3.print("HotWaterHeaterWatts:"); Serial3.print(realPower3); Serial3.print(",");
-        Serial3.print("PowerpointsLights:"); Serial3.print(fltPower5); Serial3.print(",");
-        Serial3.print("TotalCurrent:"); Serial3.print(Irms4); Serial3.print(",");
-        Serial3.print("SolarCurrent:"); Serial3.print(Irms1); Serial3.print(",");
-        Serial3.print("SpareCurrent:"); Serial3.print(Irms2); Serial3.print(",");
-        Serial3.print("hotwaterHeaterCurrent:"); Serial3.print(Irms3); Serial3.print(",");
-        Serial3.print("LineVoltage:"); Serial3.println(Vrms);
-
-        Serial.print("CT1 Solar:");
-        Serial.print(realPower1);
-        //      Serial.print("  CT2 Spare: "); //not hooked up
-        //      Serial.print(realPower2);
-        Serial.print("  CT3 Hydro: ");
-        Serial.print(realPower3);
-        Serial.print("  CT4 Total: ");
-        Serial.print(realPower4);
-        Serial.print("  PP/Lights: ");
-        Serial.println(fltPower5);
-        Serial.print("CT1 Current:");
-        Serial.print(Irms1);
-        Serial.print("  CT2 Current:");
-        Serial.print(Irms2);
-        Serial.print("  CT3 Current:");
-        Serial.print(Irms3);
-        Serial.print("  CT4 Current:");
-        Serial.println(Irms4);
-        Serial.print("Line Voltage:");
-        Serial.println(Vrms);
-        Serial.println("===========================");
-
+               Serial.print("CT1 Solar:");
+               Serial.print(realPower1);
+               //      Serial.print("  CT2 Spare: "); //not hooked up
+               //      Serial.print(realPower2);
+               Serial.print("  CT3 Hydro: ");
+               Serial.print(realPower3);
+               Serial.print("  CT4 Total: ");
+               Serial.print(realPower4);
+               Serial.print("  PP/Lights: ");
+               Serial.println(fltPower5);
+               Serial.print("CT1 Current:");
+               Serial.print(Irms1);
+               Serial.print("  CT2 Current:");
+               Serial.print(Irms2);
+               Serial.print("  CT3 Current:");
+               Serial.print(Irms3);
+               Serial.print("  CT4 Current:");
+               Serial.println(Irms4);
+               Serial.print("Line Voltage:");
+               Serial.println(Vrms);
+               Serial.println("===========================");
+     
         if (fltPower3 > 40) {
           digitalWrite(hydroLED, HIGH);
         }
@@ -700,7 +733,7 @@ void loop() {
           }
         }
       }
-      if (xbee == 1083188734) {
+      if (xbee == 1083188734) { //Independant Xbee Sensor Node
         Serial.println("==========Outside==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
@@ -734,7 +767,7 @@ void loop() {
         Serial.println("===========================");
         Serial2.flush();
       }
-      if (xbee == 1081730917) {
+      if (xbee == 1081730917) { //Independant Xbee Sensor Node
         Serial.println("==========Bedroom==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
@@ -765,7 +798,7 @@ void loop() {
         Serial.println("===========================");
       }
 
-      if (xbee == 1083645575) {
+      if (xbee == 1083645575) { //Independant Xbee Sensor Node
         Serial.println("==========Laundry==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
@@ -783,7 +816,7 @@ void loop() {
         datastreams[16].setFloat(temperatureC);
       }
 
-      if (xbee == 1085374409) {
+      if (xbee == 1085374409) { //Independant Xbee Sensor Node
         Serial.println("==========Living Room==========");
         int reading = (ioSample.getAnalog(0));
         float voltage = reading * 1.2;
@@ -793,30 +826,42 @@ void loop() {
         Serial.print(livingTemp);
         Serial.println(" degrees C");
         int vReading4 = (ioSample.getAnalog(7));
-        livingVolt = vReading4 * 1.2 / 1024;
+        livingVoltage = vReading4 * 1.2 / 1024;
         // voltage /= 1024.0;
-        Serial.print(livingVolt);
+        Serial.print(livingVoltage);
         Serial.println(" Xbee Voltage Not logged");
         Serial.println("===========================");
         Serial2.flush();
+
+        //Send to Python via Serial
+        Serial3.print("{");
+        Serial3.print("\"LivingTemp\":"); Serial3.print(livingTemp); Serial3.print(",");
+        Serial3.print("\"LivingVoltage\":"); Serial3.print(livingVoltage);
+        Serial3.print("}");
+
       }
-      if (xbee == 1085233956) {
+
+      if (xbee == 1085233956) { //Independant Xbee Sensor Node
         Serial.println("==========Bathroom==========");
         int reading = (ioSample.getAnalog(0));
-        float voltage = reading * 1.2;
-        voltage /= 1024.0;
-        bathroomTemp = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
-        //to degrees ((volatge - 500mV) times 100)
-        Serial.print(bathroomTemp);
-        Serial.println(" degrees C");
+        float voltage = reading * 1.2 / 1024;
+        bathroomTemp = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset  //to degrees ((voltage - 500mV) times 100)
 
         int vReading3 = (ioSample.getAnalog(7));
-        bathroomVolt = vReading3 * 1.2 / 1024;
-        // voltage /= 1024.0;
-        Serial.print(bathroomVolt);
-        Serial.println(" Xbee Voltage Not logged");
+        bathroomVoltage = vReading3 * 1.2 / 1024;
+
+        //Serial Output
+        Serial.print(bathroomTemp); Serial.println(" degrees C");
+        Serial.print(bathroomVoltage); Serial.println(" Xbee Voltage");
         Serial.println("===========================");
         Serial2.flush();
+
+        //Send to Python via Serial
+        Serial3.print("{");
+        Serial3.print("\"BathroomTemp\":"); Serial3.print(bathroomTemp); Serial3.print(",");
+        Serial3.print("\"BathroomVoltage\":"); Serial3.print(bathroomVoltage);
+        Serial3.print("}");
+
       }
     }
 
@@ -832,59 +877,6 @@ void loop() {
     Serial2.flush();
   }
 
-
-
-  /* Currentcost removed. Replaced by power Ardy
-    //*****************************************************
-    //         Power receipt
-    //*****************************************************
-    if (currentCostMinute != minute()) {
-      Serial.println("==========CurrentCost==========");
-      Serial1.write("S");
-      Serial.println();
-      Serial.println("Power Request Sent...");
-      // if (Serial1.available()) {
-      for(fieldIndex = 0; fieldIndex  < 3; fieldIndex ++)
-      {
-        values[fieldIndex] = Serial1.parseInt();
-      }
-      Serial.print(fieldIndex);
-      Serial.println(" fields received: ");
-      for(int i=0; i <  fieldIndex; i++)
-      {
-        //   Serial.println(values[i]);
-        if(values[0]) {
-          // Serial.print("totalpower: "); Serial.println(values[0]);
-          datastreams[9].setInt(values[0]);
-        }
-        if(values[1]){
-          // Serial.print("hydro: ");   Serial.println(values[1]);
-          datastreams[10].setInt(values[1]);
-          if(values[1] > 5) {
-            digitalWrite(hydroLED, HIGH);
-          }
-          else{
-            digitalWrite(hydroLED, LOW);
-          }
-        }
-        if (values[2]){
-          // Serial.print("lightsandpowah: "); Serial.println(values[2]);
-          datastreams[11].setInt(values[2]);
-        }
-      }
-      Serial.print("totalpower: ");
-      Serial.println(values[0]);
-      Serial.print("hydro: ");
-      Serial.println(values[1]);
-      Serial.print("lightsandpowah: ");
-      Serial.println(values[2]);
-      Serial.println();
-      fieldIndex = 0; //reset
-      Serial.println("===========================");
-      Serial1.flush();
-      currentCostMinute = minute();
-    }
-  */
   if (processMinute != minute()) {
     digitalClockDisplay();
     if (firstStart == 0) {
@@ -952,7 +944,7 @@ void loop() {
         Serial.println(values[0]);
     */
     //SQL feed
-    Serial.println("SQL:");
+    Serial.println("Serial Sending.....");
     //Serial 3 to Pi
     //converting to json 29/04/2015
     Serial3.print("CommsMotion:"); Serial3.print(datastreams[0].getInt()); Serial3.print(",");
@@ -1017,15 +1009,12 @@ void loop() {
       Serial.print("hotwater&Heater:"); Serial.print(Irms3); Serial.print(",");
       Serial.print("LineVoltage:"); Serial.println(Vrms);
     }
-    Serial.println("********SQL Injected!*********");
+    Serial.println("********Serial Sent!*********");
     Serial.println();
 
-    /*
-        Serial.println("Uploading it to Xively");
-        int ret = xivelyclient.put(feed, xivelyKey);
-        Serial.print("xivelyclient.put returned ");
-        Serial.println(ret);
-    */
+
+
+
 
     //reset comms motion switch here to update interval for motion detected not just to update if commsmotion and activity update coincides like old way
     digitalWrite(ledPin, LOW);
@@ -1059,7 +1048,11 @@ void loop() {
     waterDaily = 0 ;
   }
 }
+/*
+  void serialString(sensorName, sensorValue) {
 
+  }
+*/
 
 void handleXbeeRxMessage(uint8_t *data, uint8_t length) {
   // this is just a stub to show how to get the data,
@@ -1140,4 +1133,29 @@ void printDigits(int digits) {
   if (digits < 10)
     Serial.print('0');
   Serial.print(digits);
+}
+
+String addToString (String dataString, String keyName, String passedInt) {
+  String tempData = dataString;
+  tempData.replace("}", ",");
+  tempData += ("\"");
+  tempData += keyName;
+  tempData += ("\"");
+  tempData += ":";
+  tempData += passedInt;
+  tempData += '}';
+  return tempData;
+}
+
+//adds a float to the serial string
+String startFloatToString (String keyName, String passedFloat) {
+  String snakeBite = ":";
+  String tempBuff = "{";
+  tempBuff += ("\"");
+  tempBuff += keyName;
+  tempBuff += ("\"");
+  tempBuff += ":";
+  tempBuff += passedFloat;
+  tempBuff += '}';
+  return tempBuff;
 }
