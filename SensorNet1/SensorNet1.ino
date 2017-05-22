@@ -405,7 +405,7 @@ void loop() {
         Serial.println("=========Weather Station 1=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 100);
         String batteryV = xbeeReadString.substring(84, 89);
-        //        xbeeReadString2.trim();
+        //         xbeeReadString2.trim();
         batteryV.trim();
         Serial.println(xbeeReadString2);
         Serial.println(batteryV);
@@ -415,22 +415,22 @@ void loop() {
         batteryV.toCharArray(floatbuf, sizeof(floatbuf));
         strBatteryV = atof(floatbuf) * (3.3 / 1023);
 
-        winDir = xbeeReadString2.substring(0, 3);
-        windSpeedkph = xbeeReadString2.substring(4, 9);
-        windGustkph = xbeeReadString2.substring(10, 15);
-        windGustDir = xbeeReadString2.substring(16, 19);
-        windSpdkph_avg2m = xbeeReadString2.substring(20, 25);
-        windDir_avg2m = xbeeReadString2.substring(26, 29);
-        windGustkph_10m = xbeeReadString2.substring(30, 35);
-        windGustDir_10m = xbeeReadString2.substring(36, 39);
-        humidity = xbeeReadString2.substring(40, 45);
-        WeatherSTemp = xbeeReadString2.substring(46, 51);
-        rainIn = xbeeReadString2.substring(52, 56);
-        dailyRainIn = xbeeReadString2.substring(57, 64);
+        winDir = xbeeReadString2.substring(0, 3); //3
+        windSpeedkph = xbeeReadString2.substring(4, 9); //5
+        windGustkph = xbeeReadString2.substring(10, 15); //5
+        windGustDir = xbeeReadString2.substring(16, 19);//3
+        windSpdkph_avg2m = xbeeReadString2.substring(20, 25); //5
+        windDir_avg2m = xbeeReadString2.substring(26, 29);//3
+        windGustkph_10m = xbeeReadString2.substring(30, 35);//5
+        windGustDir_10m = xbeeReadString2.substring(36, 39);//3
+        humidity = xbeeReadString2.substring(40, 45); //5
+        WeatherSTemp = xbeeReadString2.substring(46, 51);//5
+        rainIn = xbeeReadString2.substring(52, 56); //4
+        dailyRainIn = xbeeReadString2.substring(57, 64); //7
         /*
-          pressure = xbeeReadString2.substring(65, 71);
-          batt_lvl = xbeeReadString2.substring(72, 77);
-          light_lvl = xbeeReadString2.substring(78, 83);
+          pressure = xbeeReadString2.substring(65, 71); //6
+          batt_lvl = xbeeReadString2.substring(72, 77); //5
+          light_lvl = xbeeReadString2.substring(78, 83); //5
         */
 
         winDir.trim();
@@ -484,7 +484,7 @@ void loop() {
           Serial.print(light_lvl);
         */
         Serial.print(",XBee V=");
-        Serial.print(strBatteryV);
+        Serial.println(strBatteryV);
         Serial.println("===========================");
         Serial2.flush();
         xbeeReadString = "";
@@ -493,9 +493,9 @@ void loop() {
 
       if (xbee == 1085127839 && packetSize < 60) { //Weather Station
         Serial.println("=========Weather Station 2=========");
-        String xbeeReadString2 = xbeeReadString.substring(17, 36);
+        String xbeeReadString2 = xbeeReadString.substring(16, 36);
         Serial.println(xbeeReadString2);
-        char floatbuf[30]; // make this at least big enough for the whole string
+        char floatbuf[50]; // make this at least big enough for the whole string
 
         pressure = xbeeReadString2.substring(0, 6);
         batt_lvl = xbeeReadString2.substring(7, 12);
@@ -510,7 +510,7 @@ void loop() {
         Serial.print(",batt_lvl=");
         Serial.print(batt_lvl);
         Serial.print(",light_lvl=");
-        Serial.print(light_lvl);
+        Serial.println(light_lvl);
         Serial.println("===========================");
 
         Serial2.flush();
@@ -629,8 +629,11 @@ void loop() {
         float fltPower4 = atof(floatbuf);
 
         float fltPower = fltPower4 - fltPower3; // Calculating Lights and Powerpoints Usage.
-        dtostrf(fltPower, 8, 2, floatbuf);        
+        dtostrf(fltPower, 8, 2, floatbuf);
+
         fltPower5 = String(floatbuf);
+        fltPower5.toCharArray(floatbuf, sizeof(floatbuf));
+        float fltPower5 = atof(floatbuf);
 
 
         minuteWattTotal += fltPower4;
@@ -641,55 +644,56 @@ void loop() {
         Serial.print("---Last KW/H:"); Serial.print(lastKWHour / 1000);
         Serial.print("---Last KW/H:"); Serial.print(lastKWHour2 / 1000);
         Serial.print("---KW/D:"); Serial.println(KWDay / 1000);
-/*
-        String sensorData = startFloatToString(TotalPowerWatts, realPower4);
-        sensorData = addToString(sensorData, SolarWatts, realPower1);
-        sensorData = addToString(sensorData, SpareWatts, realPower2);
-        sensorData = addToString(sensorData, HotWaterHeaterWatts, realPower3);
-        sensorData = addToString(sensorData, PowerPointsLights, fltPower5);
-        sensorData = addToString(sensorData, TotalCurrent, Irms4);
-        sensorData = addToString(sensorData, SolarCurrent, Irms1);
-        sensorData = addToString(sensorData, SpareCurrent, Irms2);
-        sensorData = addToString(sensorData, hotwaterHeaterCurrent, Irms3);
-        sensorData = addToString(sensorData, ACVoltage, Vrms);
-        Serial.println(sensorData);
-        Serial3.println(sensorData);
-*/
-      
-               Serial.println("************Power stats sent to python***********");
-               Serial3.print("TotalPowerWatts:"); Serial3.print(realPower4); Serial3.print(",");
-               Serial3.print("SolarWatts:"); Serial3.print(realPower1); Serial3.print(",");
-               Serial3.print("SpareWatts:"); Serial3.print(realPower2); Serial3.print(",");
-               Serial3.print("HotWaterHeaterWatts:"); Serial3.print(realPower3); Serial3.print(",");
-               Serial3.print("PowerpointsLights:"); Serial3.print(fltPower5); Serial3.print(",");
-               Serial3.print("TotalCurrent:"); Serial3.print(Irms4); Serial3.print(",");
-               Serial3.print("SolarCurrent:"); Serial3.print(Irms1); Serial3.print(",");
-               Serial3.print("SpareCurrent:"); Serial3.print(Irms2); Serial3.print(",");
-               Serial3.print("hotwaterHeaterCurrent:"); Serial3.print(Irms3); Serial3.print(",");
-               Serial3.print("LineVoltage:"); Serial3.println(Vrms);
+        /*
+                String sensorData = startFloatToString(TotalPowerWatts, realPower4);
+                sensorData = addToString(sensorData, SolarWatts, realPower1);
+                sensorData = addToString(sensorData, SpareWatts, realPower2);
+                sensorData = addToString(sensorData, HotWaterHeaterWatts, realPower3);
+                sensorData = addToString(sensorData, PowerPointsLights, fltPower5);
+                sensorData = addToString(sensorData, TotalCurrent, Irms4);
+                sensorData = addToString(sensorData, SolarCurrent, Irms1);
+                sensorData = addToString(sensorData, SpareCurrent, Irms2);
+                sensorData = addToString(sensorData, hotwaterHeaterCurrent, Irms3);
+                sensorData = addToString(sensorData, ACVoltage, Vrms);
+                Serial.println(sensorData);
+                Serial3.println(sensorData);
+        */
 
-               Serial.print("CT1 Solar:");
-               Serial.print(realPower1);
-               //      Serial.print("  CT2 Spare: "); //not hooked up
-               //      Serial.print(realPower2);
-               Serial.print("  CT3 Hydro: ");
-               Serial.print(realPower3);
-               Serial.print("  CT4 Total: ");
-               Serial.print(realPower4);
-               Serial.print("  PP/Lights: ");
-               Serial.println(fltPower5);
-               Serial.print("CT1 Current:");
-               Serial.print(Irms1);
-               Serial.print("  CT2 Current:");
-               Serial.print(Irms2);
-               Serial.print("  CT3 Current:");
-               Serial.print(Irms3);
-               Serial.print("  CT4 Current:");
-               Serial.println(Irms4);
-               Serial.print("Line Voltage:");
-               Serial.println(Vrms);
-               Serial.println("===========================");
-     
+        Serial.println("************Power stats sent to python***********");
+        Serial3.print("{");
+        Serial3.print("TotalPowerWatts:"); Serial3.print(realPower4); Serial3.print(",");
+        Serial3.print("SolarWatts:"); Serial3.print(realPower1); Serial3.print(",");
+        Serial3.print("SpareWatts:"); Serial3.print(realPower2); Serial3.print(",");
+        Serial3.print("HotWaterHeaterWatts:"); Serial3.print(realPower3); Serial3.print(",");
+        Serial3.print("PowerpointsLights:"); Serial3.print(fltPower5); Serial3.print(",");
+        Serial3.print("TotalCurrent:"); Serial3.print(Irms4); Serial3.print(",");
+        Serial3.print("SolarCurrent:"); Serial3.print(Irms1); Serial3.print(",");
+        Serial3.print("SpareCurrent:"); Serial3.print(Irms2); Serial3.print(",");
+        Serial3.print("hotwaterHeaterCurrent:"); Serial3.print(Irms3); Serial3.print(",");
+        Serial3.print("LineVoltage:"); Serial3.println(Vrms);
+
+        Serial.print("CT1 Solar:");
+        Serial.print(realPower1);
+        //      Serial.print("  CT2 Spare: "); //not hooked up
+        //      Serial.print(realPower2);
+        Serial.print("  CT3 Hydro: ");
+        Serial.print(realPower3);
+        Serial.print("  CT4 Total: ");
+        Serial.print(realPower4);
+        Serial.print("  PP/Lights: ");
+        Serial.println(fltPower5);
+        Serial.print("CT1 Current:");
+        Serial.print(Irms1);
+        Serial.print("  CT2 Current:");
+        Serial.print(Irms2);
+        Serial.print("  CT3 Current:");
+        Serial.print(Irms3);
+        Serial.print("  CT4 Current:");
+        Serial.println(Irms4);
+        Serial.print("Line Voltage:");
+        Serial.println(Vrms);
+        Serial.println("===========================");
+
         if (fltPower3 > 40) {
           digitalWrite(hydroLED, HIGH);
         }
@@ -832,13 +836,13 @@ void loop() {
         Serial.println(" Xbee Voltage Not logged");
         Serial.println("===========================");
         Serial2.flush();
-
-        //Send to Python via Serial
-        Serial3.print("{");
-        Serial3.print("\"LivingTemp\":"); Serial3.print(livingTemp); Serial3.print(",");
-        Serial3.print("\"LivingVoltage\":"); Serial3.print(livingVoltage);
-        Serial3.print("}");
-
+        /*
+                //Send to Python via Serial
+                Serial3.print("{");
+                Serial3.print("\"LivingTemp\":"); Serial3.print(livingTemp); Serial3.print(",");
+                Serial3.print("\"LivingVoltage\":"); Serial3.print(livingVoltage);
+                Serial3.print("}");
+        */
       }
 
       if (xbee == 1085233956) { //Independant Xbee Sensor Node
@@ -855,13 +859,13 @@ void loop() {
         Serial.print(bathroomVoltage); Serial.println(" Xbee Voltage");
         Serial.println("===========================");
         Serial2.flush();
-
-        //Send to Python via Serial
-        Serial3.print("{");
-        Serial3.print("\"BathroomTemp\":"); Serial3.print(bathroomTemp); Serial3.print(",");
-        Serial3.print("\"BathroomVoltage\":"); Serial3.print(bathroomVoltage);
-        Serial3.print("}");
-
+        /* JSON Trial 17/05/2017
+                //Send to Python via Serial
+                Serial3.print("{");
+                Serial3.print("\"BathroomTemp\":"); Serial3.print(bathroomTemp); Serial3.print(",");
+                Serial3.print("\"BathroomVoltage\":"); Serial3.print(bathroomVoltage);
+                Serial3.print("}");
+        */
       }
     }
 
@@ -947,6 +951,7 @@ void loop() {
     Serial.println("Serial Sending.....");
     //Serial 3 to Pi
     //converting to json 29/04/2015
+    Serial3.print("{");
     Serial3.print("CommsMotion:"); Serial3.print(datastreams[0].getInt()); Serial3.print(",");
     Serial3.print("CommsTemp:"); Serial3.print(datastreams[1].getFloat()); Serial3.print(",");
     Serial3.print("CommsBarometer:"); Serial3.print(datastreams[2].getFloat()); Serial3.print(",");
@@ -971,7 +976,25 @@ void loop() {
     Serial3.print("FoyeurTemp:"); Serial3.print(foyeurTemp); Serial3.print(",");
     Serial3.print("Bathroomtemp:"); Serial3.print(bathroomTemp); Serial3.print(",");
     Serial3.print("LivingTemp:"); Serial3.print(livingTemp); Serial3.print(",");
-    Serial3.print("FoyeurMotion:"); Serial3.print(FoyeurMotion);
+    Serial3.print("FoyeurMotion:"); Serial3.print(FoyeurMotion); Serial3.print(",");
+
+    Serial3.print("WindDirection:"); Serial3.print(winDir); Serial3.print(",");
+    Serial3.print("WindSpeedKPH:"); Serial3.print(windSpeedkph); Serial3.print(",");
+    Serial3.print("WindGustKPH:"); Serial3.print(windGustkph); Serial3.print(",");
+    Serial3.print("WindGustDirection:"); Serial3.print(windGustDir); Serial3.print(",");
+    Serial3.print("WindSpdKPH_avg2m:"); Serial3.print(windSpdkph_avg2m); Serial3.print(",");
+    Serial3.print("WindDirection_avg2m:"); Serial3.print(windDir_avg2m); Serial3.print(",");
+    Serial3.print("WindGustKPH_10m:"); Serial3.print(windGustkph_10m); Serial3.print(",");
+    Serial3.print("WindGustDir_10m:"); Serial3.print(windGustDir_10m); Serial3.print(",");
+    Serial3.print("OutsideHumidity:"); Serial3.print(humidity); Serial3.print(",");
+    Serial3.print("WSTemp:"); Serial3.print(WeatherSTemp); Serial3.print(",");
+    Serial3.print("Rain:"); Serial3.print(rainIn); Serial3.print(",");
+    Serial3.print("DailyRain:"); Serial3.print(dailyRainIn); Serial3.print(",");
+    Serial3.print("Pressure:"); Serial3.print(pressure); Serial3.print(",");
+    Serial3.print("WSBattery:"); Serial3.print(batt_lvl); Serial3.print(",");
+    Serial3.print("WSLight_lvl:"); Serial3.print(light_lvl);
+    Serial3.print("}");
+
 
     //debug console
     if (debug > 0 ) {
@@ -1008,6 +1031,7 @@ void loop() {
       Serial.print("SpareCurrent:"); Serial.print(Irms2); Serial.print(",");
       Serial.print("hotwater&Heater:"); Serial.print(Irms3); Serial.print(",");
       Serial.print("LineVoltage:"); Serial.println(Vrms);
+
     }
     Serial.println("********Serial Sent!*********");
     Serial.println();
