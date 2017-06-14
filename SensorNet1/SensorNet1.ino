@@ -61,6 +61,8 @@ char sensorId13[] = "Water_Usage_Hourly";
 char sensorId14[] = "Water_Usage_Daily";
 char sensorId15[] = "Bedroom1_Temp";
 char sensorId16[] = "Laundry_Temp";
+
+
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
@@ -91,7 +93,7 @@ XivelyDatastream datastreams[] = {
 XivelyFeed feed(1177751918, datastreams, 16 /* number of datastreams */);
 
 EthernetClient client;
-XivelyClient xivelyclient(client);
+// XivelyClient xivelyclient(client); ex cosm
 
 int sensorPin = 0; //light
 const int motionPin = 2; // choose the input pin (for PIR sensor)
@@ -149,6 +151,7 @@ float bathroomTemp = 0;
 float bathroomVolt = 0;
 float livingTemp = 0;
 float livingVolt = 0;
+float shedTemp = 0;
 
 String strWeather;
 String winDir;
@@ -180,7 +183,7 @@ void setup() {
   Serial.begin(19200);  //Debug
   Serial1.begin(9600); //Currentcost chat
   Serial2.begin(9600); //Xbee chat
-  Serial3.begin(19200); //Output to pi
+  Serial3.begin(57600); //Output to pi
 
   xbee.setSerial(Serial2); //sets serial2 to be used for xbee library
 
@@ -572,7 +575,7 @@ void loop() {
 
 
       if (xbee == 1081730797 && packetSize > 20) { //powermeter
-      Serial.println("=========Power Meter=========");
+      Serial.print("=========Power Meter=========");
         String xbeeReadString2 = xbeeReadString.substring(17, 83);
         if (debug == 1) {
           Serial.print("Packet Size: ");
@@ -624,6 +627,7 @@ void loop() {
         Serial.print("---KW/D:"); Serial.println(KWDay / 1000);
 
         Serial.println("************Power stats sent to python***********");
+        Serial3.print("{");
         Serial3.print("TotalPowerWatts:"); Serial3.print(realPower4); Serial3.print(",");
         Serial3.print("SolarWatts:"); Serial3.print(realPower1); Serial3.print(",");
         Serial3.print("SpareWatts:"); Serial3.print(realPower2); Serial3.print(",");
@@ -634,6 +638,7 @@ void loop() {
         Serial3.print("SpareCurrent:"); Serial3.print(Irms2); Serial3.print(",");
         Serial3.print("hotwaterHeaterCurrent:"); Serial3.print(Irms3); Serial3.print(",");
         Serial3.print("LineVoltage:"); Serial3.println(Vrms);
+        Serial3.print("}");
 
         Serial.print("CT1 Solar:");
         Serial.print(realPower1);
@@ -656,7 +661,7 @@ void loop() {
         Serial.print("Line Voltage:");
         Serial.println(Vrms);
         Serial.println("===========================");
-
+        Serial.println(" ");
         if (fltPower3 > 40) {
           digitalWrite(hydroLED, HIGH);
         }
@@ -750,6 +755,28 @@ void loop() {
         // voltage /= 1024.0;
         Serial.print(xbee1v);
         Serial.println(" Bedroom Xbee Voltage Not logged");
+        Serial.println("===========================");
+        Serial2.flush();
+      }
+
+       if (xbee == 1097062709) {
+        Serial.println("==========Shed==========");
+        int reading = (ioSample.getAnalog(0));
+        Serial.println(reading);
+        float voltage = reading * 1.2;
+        voltage /= 1024.0;
+        Serial.println(voltage);
+        float temperatureC = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
+        //to degrees ((volatge - 500mV) times 100)
+        Serial.print(temperatureC);
+        Serial.println(" degrees C");
+        shedTemp = temperatureC;
+
+        int vReading3 = (ioSample.getAnalog(7));
+        float xbee1v = vReading3 * 1.2 / 1024;
+        // voltage /= 1024.0;
+        Serial.print(xbee1v);
+        Serial.println(" Shed Xbee Voltage Not logged");
         Serial.println("===========================");
         Serial2.flush();
       }
@@ -955,6 +982,7 @@ void loop() {
     Serial.println("SQL:");
     //Serial 3 to Pi
     //converting to json 29/04/2015
+    Serial3.print("{");
     Serial3.print("CommsMotion:"); Serial3.print(datastreams[0].getInt()); Serial3.print(",");
     Serial3.print("CommsTemp:"); Serial3.print(datastreams[1].getFloat()); Serial3.print(",");
     Serial3.print("CommsBarometer:"); Serial3.print(datastreams[2].getFloat()); Serial3.print(",");
@@ -979,7 +1007,8 @@ void loop() {
     Serial3.print("FoyeurTemp:"); Serial3.print(foyeurTemp); Serial3.print(",");
     Serial3.print("Bathroomtemp:"); Serial3.print(bathroomTemp); Serial3.print(",");
     Serial3.print("LivingTemp:"); Serial3.print(livingTemp); Serial3.print(",");
-    Serial3.print("FoyeurMotion:"); Serial3.print(FoyeurMotion);
+    Serial3.print("ShedTemp:"); Serial3.print(shedTemp); Serial3.print(",");
+    Serial3.print("FoyeurMotion:"); Serial3.print(FoyeurMotion);Serial3.print("}");
 
     //debug console
     if (debug > 0 ) {
