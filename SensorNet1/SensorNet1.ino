@@ -220,7 +220,7 @@ void setup() {
 
   //Barometer OK?
   //time for barometer to start up
-  Serial.println("Barometer Warmup Phase...");
+  Serial.println("Barometer Warming up...");
   delay(1000);
   if (!bmp.begin()) {
     Serial.println("Could not find a valid BMP085 sensor, check wiring!");
@@ -237,8 +237,6 @@ void setup() {
   tsl.enableAutoRange(true);            /* Auto-gain ... switches automatically between 1x and 16x */
   //ne version below  tsl.setTiming(TSL2561_INTEGRATIONTIME_101MS);  // medium integration time (medium light)
   tsl.setIntegrationTime(TSL2561_INTEGRATIONTIME_402MS);
-
-  Serial.println("Barometer OK.....");
 
   pinMode(motionPin, INPUT);     // declare sensor as input
   pinMode(ledPin, OUTPUT);
@@ -356,10 +354,44 @@ void loop() {
       Serial.println();
       // So, for example, you could do something like this:
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
-      Serial.print("xbeereadstring:");
-      Serial.println(xbeeReadString);
-
       packetSize = xbeeReadString.length();
+      Serial.print("xbeereadstring:"); Serial.println(xbeeReadString);
+      Serial.print("Packet Length:"); Serial.println(packetSize); 
+
+
+      if (xbee == 1097062711 && packetSize > 15) { //Bottom Tank
+        String xbeeReadString2 = xbeeReadString.substring(17, 85);
+        //        if (debug == 1) {
+        Serial.print("String1="); Serial.println(xbeeReadString);
+        Serial.print("String2="); Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0
+        //        }
+
+        String tankTurbidity = xbeeReadString2.substring(0, 4);
+        String tankLevel = xbeeReadString2.substring(5, 8);
+        String tankTemp = xbeeReadString2.substring(9, 14);
+
+        tankTurbidity.trim();
+        tankLevel.trim();
+        tankTemp.trim();
+        Serial2.flush();
+
+        Serial.println("=========Water Tank=========");
+        Serial.print(tankTurbidity); Serial.println(" NTU");
+        Serial.print(tankLevel); Serial.println(" CM");
+        Serial.print(tankTemp); Serial.println(" Degrees C");
+        Serial.println("===========================");
+
+        Serial.print("{");
+        Serial.print("\"nodeName\":"); Serial.print("\"BottomTank\""); Serial.print(",");
+        Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
+        Serial.print("\"TankLevel\":"); Serial.print(tankLevel); Serial.print(",");
+        Serial.print("\"TankTemperature\":"); Serial.print(tankTemp);
+        Serial.print("}");
+
+        xbeeReadString = "";
+        xbeeReadString2 = "";
+
+      }
 
       if (xbee == 1084373003) { //Watermeter
         Serial.println("=========Water Meter=========");
@@ -823,7 +855,7 @@ void loop() {
         voltage /= 1024.0;
         float bedroom3Temp = (voltage - 0.5) * 100 ;  //converting from 10 mv per degree wit 500 mV offset
         Serial.print(bedroom3Temp);
-        Serial.print(" degrees C ");
+        Serial.println(" degrees C ");
         int vReading3 = (ioSample.getAnalog(7));
         float bedroom3Volt = vReading3 * 1.2 / 1024;
         Serial.print(bedroom3Volt);
