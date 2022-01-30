@@ -356,7 +356,7 @@ void loop() {
       handleXbeeRxMessage(rx.getData(), rx.getDataLength());
       packetSize = xbeeReadString.length();
       Serial.print("xbeereadstring:"); Serial.println(xbeeReadString);
-      Serial.print("Packet Length:"); Serial.println(packetSize); 
+      Serial.print("Packet Length:"); Serial.println(packetSize);
 
 
       if (xbee == 1097062711 && packetSize > 15) { //Bottom Tank
@@ -375,18 +375,35 @@ void loop() {
         tankTemp.trim();
         Serial2.flush();
 
+        //calcs
+        int tankLevelF = tankLevel.toInt();
+        float tankTempF = tankTemp.toFloat();
+        tankLevelF = 2400 - tankLevelF;
+        //litres in tank
+        float tankCapacityL = 3.14159265359 * 5760 * 2400 / 1000; //pi*radius2*height/1000 =L
+
+        // Serial.print(tankLevelF); Serial.println(" CM");
+        // Serial.print(tankTempF); Serial.println(" Degrees C");
+
         Serial.println("=========Water Tank=========");
         Serial.print(tankTurbidity); Serial.println(" NTU");
-        Serial.print(tankLevel); Serial.println(" CM");
+        Serial.print(tankLevelF); Serial.println(" CM");
+        Serial.print(tankCapacityL); Serial.println(" Litres");
         Serial.print(tankTemp); Serial.println(" Degrees C");
         Serial.println("===========================");
 
-        Serial.print("{");
-        Serial.print("\"nodeName\":"); Serial.print("\"BottomTank\""); Serial.print(",");
-        Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
-        Serial.print("\"TankLevel\":"); Serial.print(tankLevel); Serial.print(",");
-        Serial.print("\"TankTemperature\":"); Serial.print(tankTemp);
-        Serial.print("}");
+        if (tankLevelF > 1.00 && tankTempF > 1.00) {
+          Serial.print("{");
+          Serial.print("\"nodeName\":"); Serial.print("\"BottomTank\""); Serial.print(",");
+          Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
+          Serial.print("\"TankLevel\":"); Serial.print(tankLevelF); Serial.print(",");
+          Serial.print("\"TankCapacity\":"); Serial.print(tankCapacityL); Serial.print(",");
+          Serial.print("\"TankTemperature\":"); Serial.print(tankTemp);
+          Serial.println("}");
+        }
+        else {
+          Serial.println("***Anomalous Reading Detected, Not Logged***");
+        }
 
         xbeeReadString = "";
         xbeeReadString2 = "";
