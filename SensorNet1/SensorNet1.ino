@@ -380,7 +380,7 @@ void loop() {
         float tankTempF = tankTemp.toFloat();
         tankLevelF = 2400 - tankLevelF;
         //litres in tank
-        float tankCapacityL = 3.14159265359 * 5760 * 2400 / 1000; //pi*radius2*height/1000 =L
+        float tankCapacityL = 3.14159265359 * 5760 * tankLevelF / 1000; //pi*radius2*height/1000 =L
 
         // Serial.print(tankLevelF); Serial.println(" CM");
         // Serial.print(tankTempF); Serial.println(" Degrees C");
