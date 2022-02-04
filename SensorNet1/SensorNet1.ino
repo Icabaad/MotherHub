@@ -376,7 +376,7 @@ void loop() {
         Serial2.flush();
 
         //calcs
-        int tankLevelF = tankLevel.toInt();
+        int tankLevelF = tankLevel.toInt()*10;
         float tankTempF = tankTemp.toFloat();
         tankLevelF = 2400 - tankLevelF;
         //litres in tank
@@ -392,7 +392,7 @@ void loop() {
         Serial.print(tankTemp); Serial.println(" Degrees C");
         Serial.println("===========================");
 
-        if (tankLevelF > 1.00 && tankTempF > 1.00) {
+        if (tankLevelF < 2400.00 && tankTempF > 1.00) {
           Serial.print("{");
           Serial.print("\"nodeName\":"); Serial.print("\"BottomTank\""); Serial.print(",");
           Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
