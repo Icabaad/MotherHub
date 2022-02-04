@@ -359,24 +359,25 @@ void loop() {
       Serial.print("Packet Length:"); Serial.println(packetSize);
 
 
-      if (xbee == 1097062711 && packetSize > 15) { //Bottom Tank
+
+      if (xbee == 1097062729 && packetSize > 15) { //Top Tank
         String xbeeReadString2 = xbeeReadString.substring(17, 85);
         //        if (debug == 1) {
         Serial.print("String1="); Serial.println(xbeeReadString);
         Serial.print("String2="); Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0
         //        }
 
-        String tankTurbidity = xbeeReadString2.substring(0, 4);
+//        String tankTurbidity = xbeeReadString2.substring(0, 3);
         String tankLevel = xbeeReadString2.substring(5, 8);
         String tankTemp = xbeeReadString2.substring(9, 14);
 
-        tankTurbidity.trim();
+//        tankTurbidity.trim();
         tankLevel.trim();
         tankTemp.trim();
         Serial2.flush();
 
         //calcs
-        int tankLevelF = tankLevel.toInt()*10;
+        int tankLevelF = tankLevel.toInt() * 10;
         float tankTempF = tankTemp.toFloat();
         tankLevelF = 2400 - tankLevelF;
         //litres in tank
@@ -385,8 +386,58 @@ void loop() {
         // Serial.print(tankLevelF); Serial.println(" CM");
         // Serial.print(tankTempF); Serial.println(" Degrees C");
 
-        Serial.println("=========Water Tank=========");
-        Serial.print(tankTurbidity); Serial.println(" NTU");
+        Serial.println("=========Top Water Tank=========");
+        //        Serial.print(tankTurbidity); Serial.println(" NTU");
+        Serial.print(tankLevelF); Serial.println(" CM");
+        Serial.print(tankCapacityL); Serial.println(" Litres");
+        Serial.print(tankTemp); Serial.println(" Degrees C");
+        Serial.println("===========================");
+
+        if (tankLevelF < 2400.00) { // && tankTempF > 1.00
+          Serial.print("{");
+          Serial.print("\"nodeName\":"); Serial.print("\"TopTank\""); Serial.print(",");
+          //         Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
+          Serial.print("\"TankLevel\":"); Serial.print(tankLevelF); Serial.print(",");
+          Serial.print("\"TankCapacity\":"); Serial.print(tankCapacityL); Serial.print(",");
+          Serial.print("\"TankTemperature\":"); Serial.print(tankTemp);
+          Serial.println("}");
+        }
+        else {
+          Serial.println("***Anomalous Reading Detected, Not Logged***");
+        }
+
+        xbeeReadString = "";
+        xbeeReadString2 = "";
+      }
+
+      if (xbee == 1097062711 && packetSize > 15) { //Bottom Tank
+        String xbeeReadString2 = xbeeReadString.substring(17, 85);
+        //        if (debug == 1) {
+        Serial.print("String1="); Serial.println(xbeeReadString);
+        Serial.print("String2="); Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0
+        //        }
+
+        //        String tankTurbidity = xbeeReadString2.substring(0, 4);
+        String tankLevel = xbeeReadString2.substring(5, 8);
+        String tankTemp = xbeeReadString2.substring(9, 14);
+
+        //        tankTurbidity.trim();
+        tankLevel.trim();
+        tankTemp.trim();
+        Serial2.flush();
+
+        //calcs
+        int tankLevelF = tankLevel.toInt() * 10;
+        float tankTempF = tankTemp.toFloat();
+        tankLevelF = 2400 - tankLevelF;
+        //litres in tank
+        float tankCapacityL = 3.14159265359 * 5760 * tankLevelF / 1000; //pi*radius2*height/1000 =L
+
+        // Serial.print(tankLevelF); Serial.println(" CM");
+        // Serial.print(tankTempF); Serial.println(" Degrees C");
+
+        Serial.println("=========Bottom Water Tank=========");
+        //        Serial.print(tankTurbidity); Serial.println(" NTU");
         Serial.print(tankLevelF); Serial.println(" CM");
         Serial.print(tankCapacityL); Serial.println(" Litres");
         Serial.print(tankTemp); Serial.println(" Degrees C");
@@ -395,7 +446,7 @@ void loop() {
         if (tankLevelF < 2400.00 && tankTempF > 1.00) {
           Serial.print("{");
           Serial.print("\"nodeName\":"); Serial.print("\"BottomTank\""); Serial.print(",");
-          Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
+          //          Serial.print("\"TankTurbidity\":"); Serial.print(tankTurbidity); Serial.print(",");
           Serial.print("\"TankLevel\":"); Serial.print(tankLevelF); Serial.print(",");
           Serial.print("\"TankCapacity\":"); Serial.print(tankCapacityL); Serial.print(",");
           Serial.print("\"TankTemperature\":"); Serial.print(tankTemp);
