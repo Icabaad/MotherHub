@@ -8,12 +8,8 @@
 #include <HttpClient.h>
 //#include <Xively.h>
 #include <Wire.h>
-// replaced with below #include <Adafruit_BMP085.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
-#include <DHT.h>
-#include <DHT_U.h>
-//also replaced with below #include <TSL2561.h>
 #include <Adafruit_TSL2561_U.h>
 #include <XBee.h>
 #include <Time.h>
@@ -25,11 +21,6 @@
 //BMP085 Pressure
 //Adafruit_BMP085 bmp;
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
-
-//DHT22
-#define DHTPIN 5     // what pin we're connected to
-#define DHTTYPE DHT22   // DHT 22  (AM2302)
-DHT_Unified dht(DHTPIN, DHTTYPE);
 
 //lux
 //TSL2561 tsl(TSL2561_ADDR_LOW); //old
@@ -48,56 +39,11 @@ byte mac[] = {
 
 // Your Xively key to let you upload data
 // char xivelyKey[] = "8q9hxZHPQggWKsXqPEBZymEHa5Uyfiwv1TrcPXBenKPCsCr7";
-/*
-  // Define the strings for our datastream IDs
-  char sensorId0[] = "Comms_Motion";
-  char sensorId1[] = "Comms_Temp";
-  char sensorId2[] = "Comms_Barometer";
-  char sensorId3[] = "Comms_Humidity";
-  char sensorId4[] = "Comms_Lux";
-  char sensorId5[] = "Outdoor_Temp";
-  char sensorId6[] = "Outdoor_Voltage";
-  char sensorId7[] = "Xbee1_Battery";
-  char sensorId8[] = "Xbee1_Solar";
-  char sensorId9[] = "Total_Power_Use";
-  char sensorId10[] = "Hydroheat";
-  char sensorId11[] = "Lights_Powah";
-  char sensorId12[] = "Water_Usage";
-  char sensorId13[] = "Water_Usage_Hourly";
-  char sensorId14[] = "Water_Usage_Daily";
-  char sensorId15[] = "Bedroom1_Temp";
-  char sensorId16[] = "Laundry_Temp";
-*/
 
 //char bufferId[] = "info_message";
 //String stringId("random_string");
 const int bufferSize = 140;
 char bufferValue[bufferSize]; // enough space to store the string we're going to send
-
-/*XivelyDatastream datastreams[] = {
-  XivelyDatastream(sensorId0, strlen(sensorId0), DATASTREAM_INT),
-  XivelyDatastream(sensorId1, strlen(sensorId1), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId2, strlen(sensorId2), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId3, strlen(sensorId3), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId4, strlen(sensorId4), DATASTREAM_INT),
-  XivelyDatastream(sensorId5, strlen(sensorId5), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId6, strlen(sensorId6), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId7, strlen(sensorId7), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId8, strlen(sensorId8), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId9, strlen(sensorId9), DATASTREAM_INT),
-  XivelyDatastream(sensorId10, strlen(sensorId10), DATASTREAM_INT),
-  XivelyDatastream(sensorId11, strlen(sensorId11), DATASTREAM_INT),
-  XivelyDatastream(sensorId12, strlen(sensorId12), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId13, strlen(sensorId13), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId14, strlen(sensorId14), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId15, strlen(sensorId15), DATASTREAM_FLOAT),
-  XivelyDatastream(sensorId16, strlen(sensorId16), DATASTREAM_FLOAT),
-  // XivelyDatastream(bufferId, strlen(bufferId), DATASTREAM_BUFFER, bufferValue, bufferSize),
-  // XivelyDatastream(stringId, DATASTREAM_STRING)
-  };
-  // Finally, wrap the datastreams into a feed
-  //XivelyFeed feed(1177751918, datastreams, 16 /* number of datastreams  );
-*/
 
 //EthernetClient client;
 // XivelyClient xivelyclient(client); ex cosm
@@ -248,8 +194,6 @@ void setup() {
 
   Serial.println();
 
-  dht.begin();
-
   //RTX Time Sync
   setSyncProvider(RTC.get);   // the function to get the time from the RTC
   if (timeStatus() != timeSet)
@@ -367,11 +311,11 @@ void loop() {
         Serial.print("String2="); Serial.println(xbeeReadString2); //String2=57.25,18.00,18.00,58.20,18.20,0
         //        }
 
-//        String tankTurbidity = xbeeReadString2.substring(0, 3);
+        //        String tankTurbidity = xbeeReadString2.substring(0, 3);
         String tankLevel = xbeeReadString2.substring(5, 8);
         String tankTemp = xbeeReadString2.substring(9, 14);
 
-//        tankTurbidity.trim();
+        //        tankTurbidity.trim();
         tankLevel.trim();
         tankTemp.trim();
         Serial2.flush();
@@ -1087,33 +1031,13 @@ void loop() {
     Serial.print("Pressure = ");
     Serial.print(barometerPressure);
     Serial.println(" hPa");
-    dht.humidity().getEvent(&event);
-    Serial.print("Humidity: ");
-    int commsroomHumidity = (event.relative_humidity);
-    Serial.print(commsroomHumidity); Serial.println(" %\t");
-    dht.temperature().getEvent(&event);
-    Serial.print("Humid Temperature = ");
-    float commsroomHumTemp = (event.temperature);
-    Serial.print(commsroomHumTemp);
-    Serial.println("C Not Logged");
-    if (event.light)
-    {
-      Serial.print("Full Lux =");
-      Serial.println(event.light);
-    }
-    else
-    {
-      /* If event.light = 0 lux the sensor is probably saturated
-        and no reliable data could be generated! */
-      Serial.println("Sensor overload");
-    }
+    Serial.print("Full Lux =");
+    Serial.println(event.light);
     Serial.println("===========================");
     Serial.print("{");
     Serial.print("\"nodeName\":"); Serial.print("\"CommsRoom\""); Serial.print(",");
     Serial.print("\"CommsRoomTemperature\":"); Serial.print(barometerTemp); Serial.print(",");
     Serial.print("\"CommsRoomBarometer\":"); Serial.print(barometerPressure); Serial.print(",");
-    Serial.print("\"CommsRoomHumidity\":"); Serial.print(commsroomHumidity); Serial.print(",");
-    Serial.print("\"CommsRoomHumTemp\":"); Serial.print(commsroomHumTemp); Serial.print(",");
     Serial.print("\"CommsRoomLux\":"); Serial.print(event.light); Serial.print(",");
     Serial.print("\"CommsRoomMotion\":"); Serial.print(commsMotion);
     Serial.print("}");
